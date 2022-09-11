@@ -1,0 +1,9 @@
+main DSTACK_USAGE:0 DSTACK_LEVEL:0 FILE:"main.c" LINE:206
+modeAuto DSTACK_USAGE:0 DSTACK_LEVEL:0 FILE:"main.c" LINE:159
+thongBaoLCD DSTACK_USAGE:2 DSTACK_LEVEL:2 FILE:"main.c" LINE:69
+lcd_puts DSTACK_USAGE:3 DSTACK_LEVEL:5 FILE:"c:\cvavr2\lib\alcd.lib" LINE:243
+lcd_putchar DSTACK_USAGE:1 DSTACK_LEVEL:6 FILE:"c:\cvavr2\lib\alcd.lib" LINE:229
+lcd_gotoxy DSTACK_USAGE:2 DSTACK_LEVEL:8 FILE:"c:\cvavr2\lib\alcd.lib" LINE:211
+_lcd_write_data DSTACK_USAGE:1 DSTACK_LEVEL:9 FILE:"c:\cvavr2\lib\alcd.lib" LINE:147
+_lcd_write_nibble DSTACK_USAGE:1 DSTACK_LEVEL:10 FILE:"c:\cvavr2\lib\alcd.lib" LINE:132
+timer1_compa_isr DSTACK_USAGE:12 DSTACK_LEVEL:22 FILE:"main.c" LINE:27
