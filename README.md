@@ -1,9 +1,8 @@
 # Automotive-Windscreen-Wiper
-Knowledge used in this project:
-Microcontroller: External Interrupt, Timer0(fastPWM), Timer1(delay),
-Electronic: Ultrasonic Sensor, Voltage Divider.
-C language: loop, if-else structure.
-Automotive: working principle of the power side-view mirror.
-Working principle:
-Basic functions: fold/unfold, adjust left/right, up/down.
-Smart function: automatically folds when there is a possibility of a mirror collision at high speed. When the mirror is in open mode, if the ultrasonic sensor detects an object 100 cm away from the mirror, the system will alert the driver. If the distance from the mirror to the object is less than 40 cm and the vehicle continues to move at a speed greater than 20 km/h, the system will automatically fold the mirror for protection. When the object has been passed, the mirror will automatically be opened again. However, if the distance from the object to the mirror is less than 40cm and the vehicle moves at a speed of less than 20 km/h, the system will understand that the driver has actively slowed down to control a collision or is adjusting the car in a parking lot, the system will only warn but not automatically fold the mirrors. Another noteworthy point is that the mirror will automatically reopen if it is closed automatically for protection, this is different from the mirror being closed by the driver pressing the folding button.
++ Note: In fact, the rain sensor on the car is based on the mechanism of detecting the change of light shining through the windshield, so it can return a lot of values. Meanwhile, the rain sensor used in the simulation can only return high or low. Therefore, this project only uses rheostat to replace rain sensor.
++ Knowledge used in this project:
+    - Microcontroller: External Interrupt, Timer0(fastPWM), Timer1(delays depend on OCR1A)
+    - C language: loop, if-else structure.
+    - Automotive: working principle of windscreen wiper.
++ Working principle: The wiper system includes 5 modes: High, Low, Interrupt, Auto, Washer. The method to control the wipers fast or slow is to change the value on the OCR1A register. In Interrupt mode, the driver will adjust the interrupt time by the "Set time for mode interrupt" button. In Auto mode, the wiper is fast or slow depending on the amount of rain read from the ADC. Washing mode can be done at any time as long as the driver presses the "Washer" button, in this mode the wiper motor and wiper motor will work at the same time.
+
