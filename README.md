@@ -1,5 +1,5 @@
 # Automotive-Windscreen-Wiper
-+ Note: In fact, the rain sensor on the car is based on the mechanism of detecting the change of light shining through the windshield, so it can return a lot of value. Meanwhile, the rain sensor used in the simulation can only return high or low. Therefore, this project only uses a rheostat to replace the rain sensor.
++ Note: In fact, the rain sensor on the car is based on the mechanism of detecting the change of light shining through the windshield. Therefore, this project uses light sensors to replace rain sensors on cars.
 + Knowledge used in this project:
     - Microcontroller: External Interrupt, Timer0(fastPWM), Timer1(delays depend on OCR1A)
     - C language: loop, if-else structure.
