@@ -1,0 +1,71 @@
+#include <mega328p.h>
+#include <delay.h>
+
+void main(void)
+{
+
+//// Crystal Oscillator division factor: 1
+//#pragma optsize-
+//CLKPR=0x80;
+//CLKPR=0x00;
+//#ifdef _OPTIMIZE_SIZE_
+//#pragma optsize+
+//#endif
+
+// Timer/Counter 0 initialization
+// Clock source: System Clock
+// Clock value: Timer 0 Stopped
+// Mode: Normal top=0xFF
+// OC0A output: Disconnected
+// OC0B output: Disconnected
+TCCR0A=0b10100011;
+TCCR0B=0b00000101;
+TCNT0=0;
+OCR0A=5;
+OCR0B=5;
+
+
+// Timer/Counter 2 initialization
+// Clock source: System Clock
+// Clock value: Timer2 Stopped
+// Mode: Normal top=0xFF
+// OC2A output: Disconnected
+// OC2B output: Disconnected
+TCCR2A=0b10000011;
+TCCR2B=0b00000111;
+TCNT2=0;
+OCR2A=5;
+OCR2B=0;
+
+
+PORTC.0 = 1;
+PORTC.1 = 1;
+PORTC.2 = 1;
+PORTC.3 = 1;
+DDRD.5 = 1;
+DDRD.6 = 1;
+DDRB.3 = 1;
+
+#asm("sei")
+
+while (1)
+      {
+        if(PINC.0 == 0)
+        {   
+            OCR0A++;  
+        }   
+        if(PINC.1 == 0)
+        {
+            OCR0B++;      
+        }    
+        if(PINC.2 == 0)
+        {
+            OCR2A = 20;      
+        }  
+        if(PINC.3 == 0)
+        {
+            OCR2A = 5;      
+        }
+        delay_ms(500);
+      }
+}
