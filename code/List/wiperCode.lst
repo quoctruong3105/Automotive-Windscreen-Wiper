@@ -1,11 +1,11 @@
 
-AVRASM ver. 2.1.30  E:\Automatic car wiper\code4\List\wiperCode.asm Sun Sep 11 09:19:59 2022
+AVRASM ver. 2.1.30  E:\Windscreen wiper\code\List\wiperCode.asm Mon Sep 19 19:10:42 2022
 
-E:\Automatic car wiper\code4\List\wiperCode.asm(1061): warning: Register r3 already defined by the .DEF directive
-E:\Automatic car wiper\code4\List\wiperCode.asm(1062): warning: Register r5 already defined by the .DEF directive
-E:\Automatic car wiper\code4\List\wiperCode.asm(1063): warning: Register r8 already defined by the .DEF directive
-E:\Automatic car wiper\code4\List\wiperCode.asm(1064): warning: Register r7 already defined by the .DEF directive
-E:\Automatic car wiper\code4\List\wiperCode.asm(1065): warning: Register r10 already defined by the .DEF directive
+E:\Windscreen wiper\code\List\wiperCode.asm(1061): warning: Register r3 already defined by the .DEF directive
+E:\Windscreen wiper\code\List\wiperCode.asm(1062): warning: Register r5 already defined by the .DEF directive
+E:\Windscreen wiper\code\List\wiperCode.asm(1063): warning: Register r8 already defined by the .DEF directive
+E:\Windscreen wiper\code\List\wiperCode.asm(1064): warning: Register r7 already defined by the .DEF directive
+E:\Windscreen wiper\code\List\wiperCode.asm(1065): warning: Register r10 already defined by the .DEF directive
                  
                  
                  ;CodeVisionAVR C Compiler V2.05.0 Advanced
@@ -1085,7 +1085,7 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1065): warning: Register r10 alr
                  ;INTERRUPT VECTORS
 000000 940c 00b1 	JMP  __RESET
 000002 940c 010e 	JMP  _ext_int0_isr
-000004 940c 0122 	JMP  _ext_int1_isr
+000004 940c 0000 	JMP  0x00
 000006 940c 0000 	JMP  0x00
 000008 940c 0000 	JMP  0x00
 00000a 940c 0000 	JMP  0x00
@@ -1194,7 +1194,7 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1065): warning: Register r10 alr
 000081 203a
 000082 7541
 000083 6f74
-E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misalignment - padding zero byte
+E:\Windscreen wiper\code\List\wiperCode.asm(1128): warning: .cseg .db misalignment - padding zero byte
 000084 0000      	.DB  0x3A,0x20,0x41,0x75,0x74,0x6F,0x0
                  _0x2020003:
 000085 c080      	.DB  0x80,0xC0
@@ -1335,7 +1335,7 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
 0000e5 e0c0      	LDI  R28,LOW(__SRAM_START+__DSTACK_SIZE)
 0000e6 e0d3      	LDI  R29,HIGH(__SRAM_START+__DSTACK_SIZE)
                  
-0000e7 940c 0219 	JMP  _main
+0000e7 940c 021c 	JMP  _main
                  
                  	.ESEG
                  	.ORG 0
@@ -1380,7 +1380,7 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
                  ;
                  ;unsigned int rainFall, setTimeButton;
                  ;
-                 ;// Timer 1 output compare A interrupt service routine
+                 ;// Timer1 is used to delay, wipe fast or low is depended on OCR1A.
                  ;interrupt [TIM1_COMPA] void timer1_compa_isr(void)
                  ; 0000 001C {
                  
@@ -1402,7 +1402,7 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
                  ; 0000 001D     if(wasSw == On)
 0000f6 9b35      	SBIS 0x6,5
                  ; 0000 001E     {
-                 ; 0000 001F         PORTD.0 = 1;
+                 ; 0000 001F         PORTD.0 = 1; //Water Jet Motor is actived
 0000f7 9a58      	SBI  0xB,0
                  ; 0000 0020     }
                  ; 0000 0021     OCR0B = 10;
@@ -1411,7 +1411,7 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
                  ; 0000 0022     delay_ms(2000);
 0000fa ede0      	LDI  R30,LOW(2000)
 0000fb e0f7      	LDI  R31,HIGH(2000)
-0000fc 940e 032a 	CALL SUBOPT_0x0
+0000fc 940e 032d 	CALL SUBOPT_0x0
                  ; 0000 0023     OCR0B = 5;
 0000fe e0e5      	LDI  R30,LOW(5)
 0000ff bde8      	OUT  0x28,R30
@@ -1465,62 +1465,55 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
 000120 91e9      	LD   R30,Y+
 000121 9518      	RETI
                  ;
-                 ;// Washer
-                 ;interrupt [EXT_INT1] void ext_int1_isr(void)
-                 ; 0000 0032 {
-                 _ext_int1_isr:
-                 ; 0000 0033 // Place your code here
-                 ; 0000 0034 
-                 ; 0000 0035 }
-000122 9518      	RETI
-                 ;
                  ;// Read Rain Sensor
                  ;unsigned int read_adc(unsigned char adc_input)
-                 ; 0000 0039 {
+                 ; 0000 0032 {
                  _read_adc:
-                 ; 0000 003A ADMUX=adc_input | (ADC_VREF_TYPE & 0xff);
+                 ; 0000 0033 ADMUX=adc_input | (ADC_VREF_TYPE & 0xff);
                  ;	adc_input -> Y+0
-000123 81e8      	LD   R30,Y
-000124 64e0      	ORI  R30,0x40
-000125 93e0 007c 	STS  124,R30
-                 ; 0000 003B // Delay needed for the stabilization of the ADC input voltage
-                 ; 0000 003C delay_us(10);
+000122 81e8      	LD   R30,Y
+000123 64e0      	ORI  R30,0x40
+000124 93e0 007c 	STS  124,R30
+                 ; 0000 0034 // Delay needed for the stabilization of the ADC input voltage
+                 ; 0000 0035 delay_us(10);
                 +
-000127 e083     +LDI R24 , LOW ( 3 )
+000126 e083     +LDI R24 , LOW ( 3 )
                 +__DELAY_USB_LOOP :
-000128 958a     +DEC R24
-000129 f7f1     +BRNE __DELAY_USB_LOOP
+000127 958a     +DEC R24
+000128 f7f1     +BRNE __DELAY_USB_LOOP
                  	__DELAY_USB 3
-                 ; 0000 003D // Start the AD conversion
-                 ; 0000 003E ADCSRA|=0x40;
-00012a 91e0 007a 	LDS  R30,122
-00012c 64e0      	ORI  R30,0x40
-00012d 93e0 007a 	STS  122,R30
-                 ; 0000 003F // Wait for the AD conversion to complete
-                 ; 0000 0040 while ((ADCSRA & 0x10)==0);
+                 ; 0000 0036 // Start the AD conversion
+                 ; 0000 0037 ADCSRA|=0x40;
+000129 91e0 007a 	LDS  R30,122
+00012b 64e0      	ORI  R30,0x40
+00012c 93e0 007a 	STS  122,R30
+                 ; 0000 0038 // Wait for the AD conversion to complete
+                 ; 0000 0039 while ((ADCSRA & 0x10)==0);
                  _0x7:
-00012f 91e0 007a 	LDS  R30,122
-000131 71e0      	ANDI R30,LOW(0x10)
-000132 f3e1      	BREQ _0x7
-                 ; 0000 0041 ADCSRA|=0x10;
-000133 91e0 007a 	LDS  R30,122
-000135 61e0      	ORI  R30,0x10
-000136 93e0 007a 	STS  122,R30
-                 ; 0000 0042 return ADCW;
-000138 91e0 0078 	LDS  R30,120
-00013a 91f0 0079 	LDS  R31,120+1
-00013c 940c 0328 	JMP  _0x2080001
-                 ; 0000 0043 }
+00012e 91e0 007a 	LDS  R30,122
+000130 71e0      	ANDI R30,LOW(0x10)
+000131 f3e1      	BREQ _0x7
+                 ; 0000 003A ADCSRA|=0x10;
+000132 91e0 007a 	LDS  R30,122
+000134 61e0      	ORI  R30,0x10
+000135 93e0 007a 	STS  122,R30
+                 ; 0000 003B return ADCW;
+000137 91e0 0078 	LDS  R30,120
+000139 91f0 0079 	LDS  R31,120+1
+00013b 940c 032b 	JMP  _0x2080001
+                 ; 0000 003C }
                  ;
                  ;void thongBaoLCD(unsigned int x)
-                 ; 0000 0046 {
+                 ; 0000 003F {
                  _thongBaoLCD:
-                 ; 0000 0047     if(x > 0 && x < 350)
+                 ; 0000 0040     if(x > 10 && x < 350)
                  ;	x -> Y+0
-00013e 81a8      	LD   R26,Y
-00013f 81b9      	LDD  R27,Y+1
-000140 940e 0367 	CALL __CPW02
-000142 f420      	BRSH _0xB
+00013d 81a8      	LD   R26,Y
+00013e 81b9      	LDD  R27,Y+1
+00013f 971b      	SBIW R26,11
+000140 f030      	BRLO _0xB
+000141 81a8      	LD   R26,Y
+000142 81b9      	LDD  R27,Y+1
 000143 35ae      	CPI  R26,LOW(0x15E)
 000144 e0e1      	LDI  R30,HIGH(0x15E)
 000145 07be      	CPC  R27,R30
@@ -1528,15 +1521,15 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
                  _0xB:
 000147 c003      	RJMP _0xA
                  _0xC:
-                 ; 0000 0048     {
-                 ; 0000 0049         lcd_puts("RainFall: Slight");
+                 ; 0000 0041     {
+                 ; 0000 0042         lcd_puts("RainFall: Slight");
                 +
 000148 e0e0     +LDI R30 , LOW ( _0xD + ( 0 ) )
 000149 e0f3     +LDI R31 , HIGH ( _0xD + ( 0 ) )
                  	__POINTW1MN _0xD,0
 00014a c019      	RJMP _0x5E
-                 ; 0000 004A     }
-                 ; 0000 004B     else if(x >= 350 && x < 700)
+                 ; 0000 0043     }
+                 ; 0000 0044     else if(x >= 350 && x < 700)
                  _0xA:
 00014b 81a8      	LD   R26,Y
 00014c 81b9      	LDD  R27,Y+1
@@ -1551,15 +1544,15 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
                  _0x10:
 000155 c003      	RJMP _0xF
                  _0x11:
-                 ; 0000 004C     {
-                 ; 0000 004D         lcd_puts("RainFall: Medium");
+                 ; 0000 0045     {
+                 ; 0000 0046         lcd_puts("RainFall: Medium");
                 +
 000156 e1e1     +LDI R30 , LOW ( _0xD + ( 17 ) )
 000157 e0f3     +LDI R31 , HIGH ( _0xD + ( 17 ) )
                  	__POINTW1MN _0xD,17
 000158 c00b      	RJMP _0x5E
-                 ; 0000 004E     }
-                 ; 0000 004F     else if(x >= 700)
+                 ; 0000 0047     }
+                 ; 0000 0048     else if(x >= 700)
                  _0xF:
 000159 81a8      	LD   R26,Y
 00015a 81b9      	LDD  R27,Y+1
@@ -1567,18 +1560,18 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
 00015c e0e2      	LDI  R30,HIGH(0x2BC)
 00015d 07be      	CPC  R27,R30
 00015e f018      	BRLO _0x13
-                 ; 0000 0050     {
-                 ; 0000 0051         lcd_puts("RainFall: Heavy");
+                 ; 0000 0049     {
+                 ; 0000 004A         lcd_puts("RainFall: Heavy");
                 +
 00015f e2e2     +LDI R30 , LOW ( _0xD + ( 34 ) )
 000160 e0f3     +LDI R31 , HIGH ( _0xD + ( 34 ) )
                  	__POINTW1MN _0xD,34
 000161 c002      	RJMP _0x5E
-                 ; 0000 0052     }
-                 ; 0000 0053     else
+                 ; 0000 004B     }
+                 ; 0000 004C     else
                  _0x13:
-                 ; 0000 0054     {
-                 ; 0000 0055         lcd_puts("There's no rain");
+                 ; 0000 004D     {
+                 ; 0000 004E         lcd_puts("There's no rain");
                 +
 000162 e3e2     +LDI R30 , LOW ( _0xD + ( 50 ) )
 000163 e0f3     +LDI R31 , HIGH ( _0xD + ( 50 ) )
@@ -1586,109 +1579,109 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
                  _0x5E:
 000164 93fa      	ST   -Y,R31
 000165 93ea      	ST   -Y,R30
-000166 940e 02e9 	CALL _lcd_puts
-                 ; 0000 0056     }
-                 ; 0000 0057 }
-000168 940c 02c5 	JMP  _0x2080002
+000166 940e 02ec 	CALL _lcd_puts
+                 ; 0000 004F     }
+                 ; 0000 0050 }
+000168 940c 02c8 	JMP  _0x2080002
                  
                  	.DSEG
                  _0xD:
 000300           	.BYTE 0x42
                  ;
                  ;void washer()
-                 ; 0000 005A {
+                 ; 0000 0053 {
                  
                  	.CSEG
                  _washer:
-                 ; 0000 005B     lcd_gotoxy(0,0);
-00016a 940e 032e 	CALL SUBOPT_0x1
-                 ; 0000 005C     lcd_puts("Washering");
+                 ; 0000 0054     lcd_gotoxy(0,0);
+00016a 940e 0331 	CALL SUBOPT_0x1
+                 ; 0000 0055     lcd_puts("Washering");
                 +
 00016c e4e2     +LDI R30 , LOW ( _0x15 + ( 0 ) )
 00016d e0f3     +LDI R31 , HIGH ( _0x15 + ( 0 ) )
                  	__POINTW1MN _0x15,0
-00016e 940e 0333 	CALL SUBOPT_0x2
-                 ; 0000 005D     PORTD.0 = 0;
+00016e 940e 0336 	CALL SUBOPT_0x2
+                 ; 0000 0056     PORTD.0 = 0;
 000170 9858      	CBI  0xB,0
-                 ; 0000 005E     TIMSK1 = 0b00000010;
-000171 940e 0337 	CALL SUBOPT_0x3
-                 ; 0000 005F     OCR1AH = fastH;
-                 ; 0000 0060     OCR1AL = fastL;
+                 ; 0000 0057     TIMSK1 = 0b00000010;
+000171 940e 033a 	CALL SUBOPT_0x3
+                 ; 0000 0058     OCR1AH = fastH;
+                 ; 0000 0059     OCR1AL = fastL;
 000173 c01c      	RJMP _0x2080003
-                 ; 0000 0061 }
+                 ; 0000 005A }
                  
                  	.DSEG
                  _0x15:
 000342           	.BYTE 0xA
                  ;
                  ;void modeHigh()
-                 ; 0000 0064 {
+                 ; 0000 005D {
                  
                  	.CSEG
                  _modeHigh:
-                 ; 0000 0065     lcd_clear();
-000174 940e 033f 	CALL SUBOPT_0x4
-                 ; 0000 0066     lcd_gotoxy(0,0);
-                 ; 0000 0067     while(wasSw == On)
+                 ; 0000 005E     lcd_clear();
+000174 940e 0342 	CALL SUBOPT_0x4
+                 ; 0000 005F     lcd_gotoxy(0,0);
+                 ; 0000 0060     while(wasSw == On)
                  _0x18:
 000176 9935      	SBIC 0x6,5
 000177 c002      	RJMP _0x1A
-                 ; 0000 0068     {
-                 ; 0000 0069         washer();
+                 ; 0000 0061     {
+                 ; 0000 0062         washer();
 000178 dff1      	RCALL _washer
-                 ; 0000 006A     }
+                 ; 0000 0063     }
 000179 cffc      	RJMP _0x18
                  _0x1A:
-                 ; 0000 006B     lcd_puts("Mode: high");
+                 ; 0000 0064     lcd_puts("Mode: high");
                 +
 00017a e4ec     +LDI R30 , LOW ( _0x1B + ( 0 ) )
 00017b e0f3     +LDI R31 , HIGH ( _0x1B + ( 0 ) )
                  	__POINTW1MN _0x1B,0
-00017c 940e 0333 	CALL SUBOPT_0x2
-                 ; 0000 006C     TIMSK1 = 0b00000010;
-00017e 940e 0337 	CALL SUBOPT_0x3
-                 ; 0000 006D     OCR1AH = fastH;
-                 ; 0000 006E     OCR1AL = fastL;
+00017c 940e 0336 	CALL SUBOPT_0x2
+                 ; 0000 0065     TIMSK1 = 0b00000010;
+00017e 940e 033a 	CALL SUBOPT_0x3
+                 ; 0000 0066     OCR1AH = fastH;
+                 ; 0000 0067     OCR1AL = fastL;
 000180 c00f      	RJMP _0x2080003
-                 ; 0000 006F }
+                 ; 0000 0068 }
                  
                  	.DSEG
                  _0x1B:
 00034c           	.BYTE 0xB
                  ;
                  ;void modeLow()
-                 ; 0000 0072 {
+                 ; 0000 006B {
                  
                  	.CSEG
                  _modeLow:
-                 ; 0000 0073     lcd_clear();
-000181 940e 033f 	CALL SUBOPT_0x4
-                 ; 0000 0074     lcd_gotoxy(0,0);
-                 ; 0000 0075     while(wasSw == On)
+                 ; 0000 006C     lcd_clear();
+000181 940e 0342 	CALL SUBOPT_0x4
+                 ; 0000 006D     lcd_gotoxy(0,0);
+                 ; 0000 006E     while(wasSw == On)
                  _0x1C:
 000183 9935      	SBIC 0x6,5
 000184 c002      	RJMP _0x1E
-                 ; 0000 0076     {
-                 ; 0000 0077         washer();
+                 ; 0000 006F     {
+                 ; 0000 0070         washer();
 000185 dfe4      	RCALL _washer
-                 ; 0000 0078     }
+                 ; 0000 0071     }
 000186 cffc      	RJMP _0x1C
                  _0x1E:
-                 ; 0000 0079     lcd_puts("Mode: slow");
+                 ; 0000 0072     lcd_puts("Mode: slow");
                 +
 000187 e5e7     +LDI R30 , LOW ( _0x1F + ( 0 ) )
 000188 e0f3     +LDI R31 , HIGH ( _0x1F + ( 0 ) )
                  	__POINTW1MN _0x1F,0
-000189 940e 0333 	CALL SUBOPT_0x2
-                 ; 0000 007A     TIMSK1 = 0b00000010;
+000189 940e 0336 	CALL SUBOPT_0x2
+                 ; 0000 0073     TIMSK1 = 0b00000010;
 00018b e0e2      	LDI  R30,LOW(2)
 00018c 93e0 006f 	STS  111,R30
-                 ; 0000 007B     OCR1AH = slowH;
-00018e 940e 0342 	CALL SUBOPT_0x5
-                 ; 0000 007C     OCR1AL = slowL;
+                 ; 0000 0074     OCR1AH = slowH;
+00018e 940e 0345 	CALL SUBOPT_0x5
+                 ; 0000 0075     OCR1AL = slowL;
                  _0x2080003:
 000190 93e0 0088 	STS  136,R30
-                 ; 0000 007D }
+                 ; 0000 0076 }
 000192 9508      	RET
                  
                  	.DSEG
@@ -1696,100 +1689,100 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
 000357           	.BYTE 0xB
                  ;
                  ;void modeInterrupt()
-                 ; 0000 0080 {
+                 ; 0000 0079 {
                  
                  	.CSEG
                  _modeInterrupt:
-                 ; 0000 0081     lcd_clear();
-000193 940e 033f 	CALL SUBOPT_0x4
-                 ; 0000 0082     lcd_gotoxy(0,0);
-                 ; 0000 0083     while(wasSw == On)
+                 ; 0000 007A     lcd_clear();
+000193 940e 0342 	CALL SUBOPT_0x4
+                 ; 0000 007B     lcd_gotoxy(0,0);
+                 ; 0000 007C     while(wasSw == On)
                  _0x20:
 000195 9935      	SBIC 0x6,5
 000196 c002      	RJMP _0x22
-                 ; 0000 0084     {
-                 ; 0000 0085         washer();
+                 ; 0000 007D     {
+                 ; 0000 007E         washer();
 000197 dfd2      	RCALL _washer
-                 ; 0000 0086     }
+                 ; 0000 007F     }
 000198 cffc      	RJMP _0x20
                  _0x22:
-                 ; 0000 0087     lcd_puts("Mode: Interrupt");
+                 ; 0000 0080     lcd_puts("Mode: Interrupt");
                 +
 000199 e6e2     +LDI R30 , LOW ( _0x23 + ( 0 ) )
 00019a e0f3     +LDI R31 , HIGH ( _0x23 + ( 0 ) )
                  	__POINTW1MN _0x23,0
-00019b 940e 0333 	CALL SUBOPT_0x2
-                 ; 0000 0088     lcd_gotoxy(0,1);
-00019d 940e 0347 	CALL SUBOPT_0x6
-                 ; 0000 0089     lcd_puts("Period: ");
+00019b 940e 0336 	CALL SUBOPT_0x2
+                 ; 0000 0081     lcd_gotoxy(0,1);
+00019d 940e 034a 	CALL SUBOPT_0x6
+                 ; 0000 0082     lcd_puts("Period: ");
                 +
 00019f e7e2     +LDI R30 , LOW ( _0x23 + ( 16 ) )
 0001a0 e0f3     +LDI R31 , HIGH ( _0x23 + ( 16 ) )
                  	__POINTW1MN _0x23,16
-0001a1 940e 0333 	CALL SUBOPT_0x2
-                 ; 0000 008A     TIMSK1 = 0b00000010;
+0001a1 940e 0336 	CALL SUBOPT_0x2
+                 ; 0000 0083     TIMSK1 = 0b00000010;
 0001a3 e0e2      	LDI  R30,LOW(2)
 0001a4 93e0 006f 	STS  111,R30
-                 ; 0000 008B     if(setTimeButton == 0)
+                 ; 0000 0084     if(setTimeButton == 0)
 0001a6 2c05      	MOV  R0,R5
 0001a7 2806      	OR   R0,R6
 0001a8 f439      	BRNE _0x24
-                 ; 0000 008C     {
-                 ; 0000 008D         lcd_puts("+");
+                 ; 0000 0085     {
+                 ; 0000 0086         lcd_puts("+");
                 +
 0001a9 e7eb     +LDI R30 , LOW ( _0x23 + ( 25 ) )
 0001aa e0f3     +LDI R31 , HIGH ( _0x23 + ( 25 ) )
                  	__POINTW1MN _0x23,25
-0001ab 940e 0333 	CALL SUBOPT_0x2
-                 ; 0000 008E         OCR1AH = slowH;
-0001ad 940e 0342 	CALL SUBOPT_0x5
-                 ; 0000 008F         OCR1AL = slowL;
+0001ab 940e 0336 	CALL SUBOPT_0x2
+                 ; 0000 0087         OCR1AH = slowH;
+0001ad 940e 0345 	CALL SUBOPT_0x5
+                 ; 0000 0088         OCR1AL = slowL;
 0001af c01b      	RJMP _0x5F
-                 ; 0000 0090     }
-                 ; 0000 0091     else if(setTimeButton == 1)
+                 ; 0000 0089     }
+                 ; 0000 008A     else if(setTimeButton == 1)
                  _0x24:
 0001b0 e0e1      	LDI  R30,LOW(1)
 0001b1 e0f0      	LDI  R31,HIGH(1)
 0001b2 15e5      	CP   R30,R5
 0001b3 05f6      	CPC  R31,R6
 0001b4 f449      	BRNE _0x26
-                 ; 0000 0092     {
-                 ; 0000 0093         lcd_puts("++");
+                 ; 0000 008B     {
+                 ; 0000 008C         lcd_puts("++");
                 +
 0001b5 e7ed     +LDI R30 , LOW ( _0x23 + ( 27 ) )
 0001b6 e0f3     +LDI R31 , HIGH ( _0x23 + ( 27 ) )
                  	__POINTW1MN _0x23,27
-0001b7 940e 0333 	CALL SUBOPT_0x2
-                 ; 0000 0094         OCR1AH = medH;
+0001b7 940e 0336 	CALL SUBOPT_0x2
+                 ; 0000 008D         OCR1AH = medH;
 0001b9 e9e8      	LDI  R30,LOW(152)
 0001ba 93e0 0089 	STS  137,R30
-                 ; 0000 0095         OCR1AL = medL;
+                 ; 0000 008E         OCR1AL = medL;
 0001bc e9e6      	LDI  R30,LOW(150)
 0001bd c00d      	RJMP _0x5F
-                 ; 0000 0096     }
-                 ; 0000 0097     else if(setTimeButton == 2)
+                 ; 0000 008F     }
+                 ; 0000 0090     else if(setTimeButton == 2)
                  _0x26:
 0001be e0e2      	LDI  R30,LOW(2)
 0001bf e0f0      	LDI  R31,HIGH(2)
 0001c0 15e5      	CP   R30,R5
 0001c1 05f6      	CPC  R31,R6
 0001c2 f451      	BRNE _0x28
-                 ; 0000 0098     {
-                 ; 0000 0099         lcd_puts("+++");
+                 ; 0000 0091     {
+                 ; 0000 0092         lcd_puts("+++");
                 +
 0001c3 e8e0     +LDI R30 , LOW ( _0x23 + ( 30 ) )
 0001c4 e0f3     +LDI R31 , HIGH ( _0x23 + ( 30 ) )
                  	__POINTW1MN _0x23,30
-0001c5 940e 0333 	CALL SUBOPT_0x2
-                 ; 0000 009A         OCR1AH = fastH;
+0001c5 940e 0336 	CALL SUBOPT_0x2
+                 ; 0000 0093         OCR1AH = fastH;
 0001c7 e3ed      	LDI  R30,LOW(61)
 0001c8 93e0 0089 	STS  137,R30
-                 ; 0000 009B         OCR1AL = fastL;
+                 ; 0000 0094         OCR1AL = fastL;
 0001ca e0e9      	LDI  R30,LOW(9)
                  _0x5F:
 0001cb 93e0 0088 	STS  136,R30
-                 ; 0000 009C     }
-                 ; 0000 009D }
+                 ; 0000 0095     }
+                 ; 0000 0096 }
                  _0x28:
 0001cd 9508      	RET
                  
@@ -1798,335 +1791,343 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
 000362           	.BYTE 0x22
                  ;
                  ;void modeAuto()
-                 ; 0000 00A0 {
+                 ; 0000 0099 {
                  
                  	.CSEG
                  _modeAuto:
-                 ; 0000 00A1     lcd_clear();
-0001ce 940e 033f 	CALL SUBOPT_0x4
-                 ; 0000 00A2     lcd_gotoxy(0,0);
-                 ; 0000 00A3     while(wasSw == On)
+                 ; 0000 009A     lcd_clear();
+0001ce 940e 0342 	CALL SUBOPT_0x4
+                 ; 0000 009B     lcd_gotoxy(0,0);
+                 ; 0000 009C     while(wasSw == On)
                  _0x29:
 0001d0 9935      	SBIC 0x6,5
 0001d1 c002      	RJMP _0x2B
-                 ; 0000 00A4     {
-                 ; 0000 00A5         washer();
+                 ; 0000 009D     {
+                 ; 0000 009E         washer();
 0001d2 df97      	RCALL _washer
-                 ; 0000 00A6     }
+                 ; 0000 009F     }
 0001d3 cffc      	RJMP _0x29
                  _0x2B:
-                 ; 0000 00A7     lcd_puts("Mode: Auto");
+                 ; 0000 00A0     lcd_puts("Mode: Auto");
                 +
 0001d4 e8e4     +LDI R30 , LOW ( _0x2C + ( 0 ) )
 0001d5 e0f3     +LDI R31 , HIGH ( _0x2C + ( 0 ) )
                  	__POINTW1MN _0x2C,0
-0001d6 940e 0333 	CALL SUBOPT_0x2
-                 ; 0000 00A8     rainFall = read_adc(0);
+0001d6 940e 0336 	CALL SUBOPT_0x2
+                 ; 0000 00A1     rainFall = read_adc(0);
 0001d8 e0e0      	LDI  R30,LOW(0)
 0001d9 93ea      	ST   -Y,R30
-0001da df48      	RCALL _read_adc
+0001da df47      	RCALL _read_adc
                 +
 0001db 2e3e     +MOV R3 , R30
 0001dc 2e4f     +MOV R4 , R31
                  	__PUTW1R 3,4
-                 ; 0000 00A9     lcd_gotoxy(0,1);
-0001dd 940e 0347 	CALL SUBOPT_0x6
-                 ; 0000 00AA     thongBaoLCD(rainFall);
+                 ; 0000 00A2     lcd_gotoxy(0,1);
+0001dd 940e 034a 	CALL SUBOPT_0x6
+                 ; 0000 00A3     thongBaoLCD(rainFall);
 0001df 924a      	ST   -Y,R4
 0001e0 923a      	ST   -Y,R3
-0001e1 df5c      	RCALL _thongBaoLCD
-                 ; 0000 00AB     //Allow interrup
-                 ; 0000 00AC     if(rainFall != 0) //When rain sensor receive rain sginal -> allow interrupt
-0001e2 2c03      	MOV  R0,R3
-0001e3 2804      	OR   R0,R4
-0001e4 f011      	BREQ _0x2D
-                 ; 0000 00AD     {
-                 ; 0000 00AE         TIMSK1 = 0b00000010;
-0001e5 e0e2      	LDI  R30,LOW(2)
-0001e6 c001      	RJMP _0x60
-                 ; 0000 00AF     }
-                 ; 0000 00B0     else //When there is no rain -> no interrupt -> Servo does not operate
+0001e1 df5b      	RCALL _thongBaoLCD
+                 ; 0000 00A4     //Allow interrup
+                 ; 0000 00A5     if(rainFall > 10) //When rain sensor receive rain sginal -> allow interrupt
+0001e2 e0ea      	LDI  R30,LOW(10)
+0001e3 e0f0      	LDI  R31,HIGH(10)
+0001e4 15e3      	CP   R30,R3
+0001e5 05f4      	CPC  R31,R4
+0001e6 f410      	BRSH _0x2D
+                 ; 0000 00A6     {
+                 ; 0000 00A7         TIMSK1 = 0b00000010;
+0001e7 e0e2      	LDI  R30,LOW(2)
+0001e8 c001      	RJMP _0x60
+                 ; 0000 00A8     }
+                 ; 0000 00A9     else //When there is no rain -> no interrupt -> Servo does not operate
                  _0x2D:
-                 ; 0000 00B1     {
-                 ; 0000 00B2         TIMSK1 = 0b00000000;
-0001e7 e0e0      	LDI  R30,LOW(0)
+                 ; 0000 00AA     {
+                 ; 0000 00AB         TIMSK1 = 0b00000000;
+0001e9 e0e0      	LDI  R30,LOW(0)
                  _0x60:
-0001e8 93e0 006f 	STS  111,R30
-                 ; 0000 00B3     }
-                 ; 0000 00B4 
-                 ; 0000 00B5     //Delay depend on ADC using Timer1
-                 ; 0000 00B6     if(rainFall > 0 && rainFall < 350) // Slight
-0001ea 2400      	CLR  R0
-0001eb 1403      	CP   R0,R3
-0001ec 0404      	CPC  R0,R4
-0001ed f428      	BRSH _0x30
-0001ee e5ee      	LDI  R30,LOW(350)
-0001ef e0f1      	LDI  R31,HIGH(350)
-0001f0 163e      	CP   R3,R30
-0001f1 064f      	CPC  R4,R31
-0001f2 f008      	BRLO _0x31
+0001ea 93e0 006f 	STS  111,R30
+                 ; 0000 00AC     }
+                 ; 0000 00AD 
+                 ; 0000 00AE     //Delay depend on ADC using Timer1
+                 ; 0000 00AF     if(rainFall > 10 && rainFall < 350) // Slight
+0001ec e0ea      	LDI  R30,LOW(10)
+0001ed e0f0      	LDI  R31,HIGH(10)
+0001ee 15e3      	CP   R30,R3
+0001ef 05f4      	CPC  R31,R4
+0001f0 f428      	BRSH _0x30
+0001f1 e5ee      	LDI  R30,LOW(350)
+0001f2 e0f1      	LDI  R31,HIGH(350)
+0001f3 163e      	CP   R3,R30
+0001f4 064f      	CPC  R4,R31
+0001f5 f008      	BRLO _0x31
                  _0x30:
-0001f3 c003      	RJMP _0x2F
+0001f6 c003      	RJMP _0x2F
                  _0x31:
-                 ; 0000 00B7     {
-                 ; 0000 00B8         OCR1AH = slowH;
-0001f4 940e 0342 	CALL SUBOPT_0x5
-                 ; 0000 00B9         OCR1AL = slowL;
-0001f6 c019      	RJMP _0x61
-                 ; 0000 00BA     }
-                 ; 0000 00BB     else if(rainFall >= 350 && rainFall < 700) // Medium
+                 ; 0000 00B0     {
+                 ; 0000 00B1         OCR1AH = slowH;
+0001f7 940e 0345 	CALL SUBOPT_0x5
+                 ; 0000 00B2         OCR1AL = slowL;
+0001f9 c019      	RJMP _0x61
+                 ; 0000 00B3     }
+                 ; 0000 00B4     else if(rainFall >= 350 && rainFall < 700) // Medium
                  _0x2F:
-0001f7 e5ee      	LDI  R30,LOW(350)
-0001f8 e0f1      	LDI  R31,HIGH(350)
-0001f9 163e      	CP   R3,R30
-0001fa 064f      	CPC  R4,R31
-0001fb f028      	BRLO _0x34
-0001fc ebec      	LDI  R30,LOW(700)
-0001fd e0f2      	LDI  R31,HIGH(700)
-0001fe 163e      	CP   R3,R30
-0001ff 064f      	CPC  R4,R31
-000200 f008      	BRLO _0x35
+0001fa e5ee      	LDI  R30,LOW(350)
+0001fb e0f1      	LDI  R31,HIGH(350)
+0001fc 163e      	CP   R3,R30
+0001fd 064f      	CPC  R4,R31
+0001fe f028      	BRLO _0x34
+0001ff ebec      	LDI  R30,LOW(700)
+000200 e0f2      	LDI  R31,HIGH(700)
+000201 163e      	CP   R3,R30
+000202 064f      	CPC  R4,R31
+000203 f008      	BRLO _0x35
                  _0x34:
-000201 c005      	RJMP _0x33
+000204 c005      	RJMP _0x33
                  _0x35:
-                 ; 0000 00BC     {
-                 ; 0000 00BD         OCR1AH = medH;
-000202 e9e8      	LDI  R30,LOW(152)
-000203 93e0 0089 	STS  137,R30
-                 ; 0000 00BE         OCR1AL = medL;
-000205 e9e6      	LDI  R30,LOW(150)
-000206 c009      	RJMP _0x61
-                 ; 0000 00BF     }
-                 ; 0000 00C0     else if(rainFall >= 700) // Heavy
+                 ; 0000 00B5     {
+                 ; 0000 00B6         OCR1AH = medH;
+000205 e9e8      	LDI  R30,LOW(152)
+000206 93e0 0089 	STS  137,R30
+                 ; 0000 00B7         OCR1AL = medL;
+000208 e9e6      	LDI  R30,LOW(150)
+000209 c009      	RJMP _0x61
+                 ; 0000 00B8     }
+                 ; 0000 00B9     else if(rainFall >= 700) // Heavy
                  _0x33:
-000207 ebec      	LDI  R30,LOW(700)
-000208 e0f2      	LDI  R31,HIGH(700)
-000209 163e      	CP   R3,R30
-00020a 064f      	CPC  R4,R31
-00020b f030      	BRLO _0x37
-                 ; 0000 00C1     {
-                 ; 0000 00C2         OCR1AH = fastH;
-00020c e3ed      	LDI  R30,LOW(61)
-00020d 93e0 0089 	STS  137,R30
-                 ; 0000 00C3         OCR1AL = fastL;
-00020f e0e9      	LDI  R30,LOW(9)
+00020a ebec      	LDI  R30,LOW(700)
+00020b e0f2      	LDI  R31,HIGH(700)
+00020c 163e      	CP   R3,R30
+00020d 064f      	CPC  R4,R31
+00020e f030      	BRLO _0x37
+                 ; 0000 00BA     {
+                 ; 0000 00BB         OCR1AH = fastH;
+00020f e3ed      	LDI  R30,LOW(61)
+000210 93e0 0089 	STS  137,R30
+                 ; 0000 00BC         OCR1AL = fastL;
+000212 e0e9      	LDI  R30,LOW(9)
                  _0x61:
-000210 93e0 0088 	STS  136,R30
-                 ; 0000 00C4     }
-                 ; 0000 00C5 }
+000213 93e0 0088 	STS  136,R30
+                 ; 0000 00BD     }
+                 ; 0000 00BE }
                  _0x37:
-000212 9508      	RET
+000215 9508      	RET
                  
                  	.DSEG
                  _0x2C:
 000384           	.BYTE 0xB
                  ;
                  ;void off()
-                 ; 0000 00C8 {
+                 ; 0000 00C1 {
                  
                  	.CSEG
                  _off:
-                 ; 0000 00C9     TIMSK1 = 0b00000000;
-000213 e0e0      	LDI  R30,LOW(0)
-000214 93e0 006f 	STS  111,R30
-                 ; 0000 00CA     lcd_clear();
-000216 940e 033f 	CALL SUBOPT_0x4
-                 ; 0000 00CB     lcd_gotoxy(0,0);
-                 ; 0000 00CC }
-000218 9508      	RET
+                 ; 0000 00C2     TIMSK1 = 0b00000000;
+000216 e0e0      	LDI  R30,LOW(0)
+000217 93e0 006f 	STS  111,R30
+                 ; 0000 00C3     lcd_clear();
+000219 940e 0342 	CALL SUBOPT_0x4
+                 ; 0000 00C4     lcd_gotoxy(0,0);
+                 ; 0000 00C5 }
+00021b 9508      	RET
                  ;
                  ;void main(void)
-                 ; 0000 00CF {
+                 ; 0000 00C8 {
                  _main:
-                 ; 0000 00D0 
-                 ; 0000 00D1 // Timer/Counter 0 initialization
-                 ; 0000 00D2 TCCR0A=0b00100011;
-000219 e2e3      	LDI  R30,LOW(35)
-00021a bde4      	OUT  0x24,R30
-                 ; 0000 00D3 TCCR0B=0b00001101;
-00021b e0ed      	LDI  R30,LOW(13)
-00021c bde5      	OUT  0x25,R30
-                 ; 0000 00D4 OCR0A=100;
-00021d e6e4      	LDI  R30,LOW(100)
-00021e bde7      	OUT  0x27,R30
-                 ; 0000 00D5 OCR0B=5;
-00021f e0e5      	LDI  R30,LOW(5)
-000220 bde8      	OUT  0x28,R30
-                 ; 0000 00D6 
-                 ; 0000 00D7 // Timer/Counter 1 initialization
-                 ; 0000 00D8 TCCR1A=0b00000000; // Mode CTC: TOP OCR1A
-000221 e0e0      	LDI  R30,LOW(0)
-000222 93e0 0080 	STS  128,R30
-                 ; 0000 00D9 TCCR1B=0b00001100; // Presacle: 256 -> f: 256/8 = 32 muys
-000224 e0ec      	LDI  R30,LOW(12)
-000225 93e0 0081 	STS  129,R30
-                 ; 0000 00DA TIMSK1=0b00000000; // Interrupt will be set depend on mode
-000227 e0e0      	LDI  R30,LOW(0)
-000228 93e0 006f 	STS  111,R30
-                 ; 0000 00DB 
-                 ; 0000 00DC // ADC initialization
-                 ; 0000 00DD DIDR0=0x01;
-00022a e0e1      	LDI  R30,LOW(1)
-00022b 93e0 007e 	STS  126,R30
-                 ; 0000 00DE ADMUX=ADC_VREF_TYPE & 0xff;
-00022d e4e0      	LDI  R30,LOW(64)
-00022e 93e0 007c 	STS  124,R30
-                 ; 0000 00DF ADCSRA=0x81;
-000230 e8e1      	LDI  R30,LOW(129)
-000231 93e0 007a 	STS  122,R30
-                 ; 0000 00E0 
-                 ; 0000 00E1 // External Interrupt(s) initialization
-                 ; 0000 00E2 EICRA=0x02;
-000233 e0e2      	LDI  R30,LOW(2)
-000234 93e0 0069 	STS  105,R30
-                 ; 0000 00E3 EIMSK=0x01;
-000236 e0e1      	LDI  R30,LOW(1)
-000237 bbed      	OUT  0x1D,R30
-                 ; 0000 00E4 EIFR=0x01;
-000238 bbec      	OUT  0x1C,R30
-                 ; 0000 00E5 
-                 ; 0000 00E6 DDRD.5 = 1; // Output PWM
-000239 9a55      	SBI  0xA,5
-                 ; 0000 00E7 DDRD.0 = 1; // Output Motor jet water
-00023a 9a50      	SBI  0xA,0
-                 ; 0000 00E8 PORTC.1 = 1; // Mode High switch
-00023b 9a41      	SBI  0x8,1
-                 ; 0000 00E9 PORTC.2 = 1; // Mode Low switch
-00023c 9a42      	SBI  0x8,2
-                 ; 0000 00EA PORTC.3 = 1; // Mode Interrupt switch
-00023d 9a43      	SBI  0x8,3
-                 ; 0000 00EB PORTC.4 = 1; // Mode Auto switch
-00023e 9a44      	SBI  0x8,4
-                 ; 0000 00EC PORTC.5 = 1; // Washer Switch
-00023f 9a45      	SBI  0x8,5
-                 ; 0000 00ED PORTD.2 = 1; // Set time for mode interrupt button
-000240 9a5a      	SBI  0xB,2
-                 ; 0000 00EE 
-                 ; 0000 00EF // Characters/line: 16
-                 ; 0000 00F0 lcd_init(16);
-000241 e1e0      	LDI  R30,LOW(16)
-000242 93ea      	ST   -Y,R30
-000243 940e 02f8 	CALL _lcd_init
+                 ; 0000 00C9 
+                 ; 0000 00CA // Timer/Counter 0 initialization
+                 ; 0000 00CB // Mode: fastPWM (Top is OCR0A)
+                 ; 0000 00CC // Prescaler: 1024
+                 ; 0000 00CD TCCR0A=0b00100011;
+00021c e2e3      	LDI  R30,LOW(35)
+00021d bde4      	OUT  0x24,R30
+                 ; 0000 00CE TCCR0B=0b00001101;
+00021e e0ed      	LDI  R30,LOW(13)
+00021f bde5      	OUT  0x25,R30
+                 ; 0000 00CF OCR0A=100;
+000220 e6e4      	LDI  R30,LOW(100)
+000221 bde7      	OUT  0x27,R30
+                 ; 0000 00D0 OCR0B=5;
+000222 e0e5      	LDI  R30,LOW(5)
+000223 bde8      	OUT  0x28,R30
+                 ; 0000 00D1 
+                 ; 0000 00D2 // Timer/Counter 1 initialization
+                 ; 0000 00D3 // Mode: CTC (Top is OCR1A)
+                 ; 0000 00D4 // Prescaler: 256 -> f: 256/8 = 32 muys
+                 ; 0000 00D5 // Interrupt and top will be set depend on mode
+                 ; 0000 00D6 TCCR1A=0b00000000;
+000224 e0e0      	LDI  R30,LOW(0)
+000225 93e0 0080 	STS  128,R30
+                 ; 0000 00D7 TCCR1B=0b00001100;
+000227 e0ec      	LDI  R30,LOW(12)
+000228 93e0 0081 	STS  129,R30
+                 ; 0000 00D8 TIMSK1=0b00000000;
+00022a e0e0      	LDI  R30,LOW(0)
+00022b 93e0 006f 	STS  111,R30
+                 ; 0000 00D9 
+                 ; 0000 00DA // ADC initialization
+                 ; 0000 00DB DIDR0=0x01;
+00022d e0e1      	LDI  R30,LOW(1)
+00022e 93e0 007e 	STS  126,R30
+                 ; 0000 00DC ADMUX=ADC_VREF_TYPE & 0xff;
+000230 e4e0      	LDI  R30,LOW(64)
+000231 93e0 007c 	STS  124,R30
+                 ; 0000 00DD ADCSRA=0x81;
+000233 e8e1      	LDI  R30,LOW(129)
+000234 93e0 007a 	STS  122,R30
+                 ; 0000 00DE 
+                 ; 0000 00DF // External Interrupt(s) initialization
+                 ; 0000 00E0 EICRA=0x02;
+000236 e0e2      	LDI  R30,LOW(2)
+000237 93e0 0069 	STS  105,R30
+                 ; 0000 00E1 EIMSK=0x01;
+000239 e0e1      	LDI  R30,LOW(1)
+00023a bbed      	OUT  0x1D,R30
+                 ; 0000 00E2 EIFR=0x01;
+00023b bbec      	OUT  0x1C,R30
+                 ; 0000 00E3 
+                 ; 0000 00E4 DDRD.5 = 1; // Output PWM
+00023c 9a55      	SBI  0xA,5
+                 ; 0000 00E5 DDRD.0 = 1; // Output Motor jet water
+00023d 9a50      	SBI  0xA,0
+                 ; 0000 00E6 PORTC.1 = 1; // Mode High switch
+00023e 9a41      	SBI  0x8,1
+                 ; 0000 00E7 PORTC.2 = 1; // Mode Low switch
+00023f 9a42      	SBI  0x8,2
+                 ; 0000 00E8 PORTC.3 = 1; // Mode Interrupt switch
+000240 9a43      	SBI  0x8,3
+                 ; 0000 00E9 PORTC.4 = 1; // Mode Auto switch
+000241 9a44      	SBI  0x8,4
+                 ; 0000 00EA PORTC.5 = 1; // Washer Switch
+000242 9a45      	SBI  0x8,5
+                 ; 0000 00EB PORTD.2 = 1; // Set time for mode interrupt button
+000243 9a5a      	SBI  0xB,2
+                 ; 0000 00EC 
+                 ; 0000 00ED // Characters/line: 16
+                 ; 0000 00EE lcd_init(16);
+000244 e1e0      	LDI  R30,LOW(16)
+000245 93ea      	ST   -Y,R30
+000246 940e 02fb 	CALL _lcd_init
+                 ; 0000 00EF 
+                 ; 0000 00F0 #asm("sei")
+000248 9478      	sei
                  ; 0000 00F1 
-                 ; 0000 00F2 #asm("sei")
-000245 9478      	sei
-                 ; 0000 00F3 
-                 ; 0000 00F4 while (1)
+                 ; 0000 00F2 while (1)
                  _0x48:
-                 ; 0000 00F5       {
-                 ; 0000 00F6         if(autoSw == On && hiSw == Off && loSw == Off && intSw == Off)
-000246 e0a0      	LDI  R26,0
-000247 9934      	SBIC 0x6,4
-000248 e0a1      	LDI  R26,1
-000249 30a0      	CPI  R26,LOW(0x0)
-00024a f431      	BRNE _0x4C
-00024b 9b31      	SBIS 0x6,1
-00024c c004      	RJMP _0x4C
-00024d 9b32      	SBIS 0x6,2
-00024e c002      	RJMP _0x4C
-00024f 9933      	SBIC 0x6,3
-000250 c001      	RJMP _0x4D
+                 ; 0000 00F3       {
+                 ; 0000 00F4         if(autoSw == On && hiSw == Off && loSw == Off && intSw == Off)
+000249 e0a0      	LDI  R26,0
+00024a 9934      	SBIC 0x6,4
+00024b e0a1      	LDI  R26,1
+00024c 30a0      	CPI  R26,LOW(0x0)
+00024d f431      	BRNE _0x4C
+00024e 9b31      	SBIS 0x6,1
+00024f c004      	RJMP _0x4C
+000250 9b32      	SBIS 0x6,2
+000251 c002      	RJMP _0x4C
+000252 9933      	SBIC 0x6,3
+000253 c001      	RJMP _0x4D
                  _0x4C:
-000251 c002      	RJMP _0x4B
+000254 c002      	RJMP _0x4B
                  _0x4D:
-                 ; 0000 00F7         {
-                 ; 0000 00F8             modeAuto();
-000252 df7b      	RCALL _modeAuto
-                 ; 0000 00F9         }
-                 ; 0000 00FA         else if(hiSw == On && loSw == Off && intSw == Off && autoSw == Off)
-000253 c02f      	RJMP _0x4E
+                 ; 0000 00F5         {
+                 ; 0000 00F6             modeAuto();
+000255 df78      	RCALL _modeAuto
+                 ; 0000 00F7         }
+                 ; 0000 00F8         else if(hiSw == On && loSw == Off && intSw == Off && autoSw == Off)
+000256 c02f      	RJMP _0x4E
                  _0x4B:
-000254 e0a0      	LDI  R26,0
-000255 9931      	SBIC 0x6,1
-000256 e0a1      	LDI  R26,1
-000257 30a0      	CPI  R26,LOW(0x0)
-000258 f431      	BRNE _0x50
-000259 9b32      	SBIS 0x6,2
-00025a c004      	RJMP _0x50
-00025b 9b33      	SBIS 0x6,3
-00025c c002      	RJMP _0x50
-00025d 9934      	SBIC 0x6,4
-00025e c001      	RJMP _0x51
+000257 e0a0      	LDI  R26,0
+000258 9931      	SBIC 0x6,1
+000259 e0a1      	LDI  R26,1
+00025a 30a0      	CPI  R26,LOW(0x0)
+00025b f431      	BRNE _0x50
+00025c 9b32      	SBIS 0x6,2
+00025d c004      	RJMP _0x50
+00025e 9b33      	SBIS 0x6,3
+00025f c002      	RJMP _0x50
+000260 9934      	SBIC 0x6,4
+000261 c001      	RJMP _0x51
                  _0x50:
-00025f c002      	RJMP _0x4F
+000262 c002      	RJMP _0x4F
                  _0x51:
-                 ; 0000 00FB         {
-                 ; 0000 00FC             modeHigh();
-000260 df13      	RCALL _modeHigh
-                 ; 0000 00FD         }
-                 ; 0000 00FE         else if(loSw == On && hiSw == Off && intSw == Off && autoSw == Off)
-000261 c021      	RJMP _0x52
+                 ; 0000 00F9         {
+                 ; 0000 00FA             modeHigh();
+000263 df10      	RCALL _modeHigh
+                 ; 0000 00FB         }
+                 ; 0000 00FC         else if(loSw == On && hiSw == Off && intSw == Off && autoSw == Off)
+000264 c021      	RJMP _0x52
                  _0x4F:
-000262 e0a0      	LDI  R26,0
-000263 9932      	SBIC 0x6,2
-000264 e0a1      	LDI  R26,1
-000265 30a0      	CPI  R26,LOW(0x0)
-000266 f431      	BRNE _0x54
-000267 9b31      	SBIS 0x6,1
-000268 c004      	RJMP _0x54
-000269 9b33      	SBIS 0x6,3
-00026a c002      	RJMP _0x54
-00026b 9934      	SBIC 0x6,4
-00026c c001      	RJMP _0x55
+000265 e0a0      	LDI  R26,0
+000266 9932      	SBIC 0x6,2
+000267 e0a1      	LDI  R26,1
+000268 30a0      	CPI  R26,LOW(0x0)
+000269 f431      	BRNE _0x54
+00026a 9b31      	SBIS 0x6,1
+00026b c004      	RJMP _0x54
+00026c 9b33      	SBIS 0x6,3
+00026d c002      	RJMP _0x54
+00026e 9934      	SBIC 0x6,4
+00026f c001      	RJMP _0x55
                  _0x54:
-00026d c002      	RJMP _0x53
+000270 c002      	RJMP _0x53
                  _0x55:
-                 ; 0000 00FF         {
-                 ; 0000 0100             modeLow();
-00026e df12      	RCALL _modeLow
-                 ; 0000 0101         }
-                 ; 0000 0102 
-                 ; 0000 0103         else if(intSw == On && hiSw == Off && loSw == Off && autoSw == Off)
-00026f c013      	RJMP _0x56
+                 ; 0000 00FD         {
+                 ; 0000 00FE             modeLow();
+000271 df0f      	RCALL _modeLow
+                 ; 0000 00FF         }
+                 ; 0000 0100 
+                 ; 0000 0101         else if(intSw == On && hiSw == Off && loSw == Off && autoSw == Off)
+000272 c013      	RJMP _0x56
                  _0x53:
-000270 e0a0      	LDI  R26,0
-000271 9933      	SBIC 0x6,3
-000272 e0a1      	LDI  R26,1
-000273 30a0      	CPI  R26,LOW(0x0)
-000274 f431      	BRNE _0x58
-000275 9b31      	SBIS 0x6,1
-000276 c004      	RJMP _0x58
-000277 9b32      	SBIS 0x6,2
-000278 c002      	RJMP _0x58
-000279 9934      	SBIC 0x6,4
-00027a c001      	RJMP _0x59
+000273 e0a0      	LDI  R26,0
+000274 9933      	SBIC 0x6,3
+000275 e0a1      	LDI  R26,1
+000276 30a0      	CPI  R26,LOW(0x0)
+000277 f431      	BRNE _0x58
+000278 9b31      	SBIS 0x6,1
+000279 c004      	RJMP _0x58
+00027a 9b32      	SBIS 0x6,2
+00027b c002      	RJMP _0x58
+00027c 9934      	SBIC 0x6,4
+00027d c001      	RJMP _0x59
                  _0x58:
-00027b c002      	RJMP _0x57
+00027e c002      	RJMP _0x57
                  _0x59:
-                 ; 0000 0104         {
-                 ; 0000 0105             modeInterrupt();
-00027c df16      	RCALL _modeInterrupt
-                 ; 0000 0106         }
-                 ; 0000 0107         else if(wasSw == On)
-00027d c005      	RJMP _0x5A
+                 ; 0000 0102         {
+                 ; 0000 0103             modeInterrupt();
+00027f df13      	RCALL _modeInterrupt
+                 ; 0000 0104         }
+                 ; 0000 0105         else if(wasSw == On)
+000280 c005      	RJMP _0x5A
                  _0x57:
-00027e 9935      	SBIC 0x6,5
-00027f c002      	RJMP _0x5B
-                 ; 0000 0108         {
-                 ; 0000 0109             washer();
-000280 dee9      	RCALL _washer
-                 ; 0000 010A         }
-                 ; 0000 010B         else
-000281 c001      	RJMP _0x5C
+000281 9935      	SBIC 0x6,5
+000282 c002      	RJMP _0x5B
+                 ; 0000 0106         {
+                 ; 0000 0107             washer();
+000283 dee6      	RCALL _washer
+                 ; 0000 0108         }
+                 ; 0000 0109         else
+000284 c001      	RJMP _0x5C
                  _0x5B:
-                 ; 0000 010C         {
-                 ; 0000 010D             off();
-000282 df90      	RCALL _off
-                 ; 0000 010E         }
+                 ; 0000 010A         {
+                 ; 0000 010B             off();
+000285 df90      	RCALL _off
+                 ; 0000 010C         }
                  _0x5C:
                  _0x5A:
                  _0x56:
                  _0x52:
                  _0x4E:
-                 ; 0000 010F         delay_ms(500);
-000283 efe4      	LDI  R30,LOW(500)
-000284 e0f1      	LDI  R31,HIGH(500)
-000285 940e 032a 	CALL SUBOPT_0x0
-                 ; 0000 0110       }
-000287 cfbe      	RJMP _0x48
-                 ; 0000 0111 }
+                 ; 0000 010D         delay_ms(500);
+000286 efe4      	LDI  R30,LOW(500)
+000287 e0f1      	LDI  R31,HIGH(500)
+000288 940e 032d 	CALL SUBOPT_0x0
+                 ; 0000 010E       }
+00028a cfbe      	RJMP _0x48
+                 ; 0000 010F }
                  _0x5D:
-000288 cfff      	RJMP _0x5D
+00028b cfff      	RJMP _0x5D
                  	#ifndef __SLEEP_DEFINED__
                  	#endif
                  
@@ -2138,199 +2139,199 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
                  
                  	.CSEG
                  __lcd_write_nibble_G101:
-000289 81e8      	LD   R30,Y
-00028a 71e0      	ANDI R30,LOW(0x10)
-00028b f011      	BREQ _0x2020004
-00028c 9a2b      	SBI  0x5,3
-00028d c001      	RJMP _0x2020005
+00028c 81e8      	LD   R30,Y
+00028d 71e0      	ANDI R30,LOW(0x10)
+00028e f011      	BREQ _0x2020004
+00028f 9a2b      	SBI  0x5,3
+000290 c001      	RJMP _0x2020005
                  _0x2020004:
-00028e 982b      	CBI  0x5,3
+000291 982b      	CBI  0x5,3
                  _0x2020005:
-00028f 81e8      	LD   R30,Y
-000290 72e0      	ANDI R30,LOW(0x20)
-000291 f011      	BREQ _0x2020006
-000292 9a2c      	SBI  0x5,4
-000293 c001      	RJMP _0x2020007
+000292 81e8      	LD   R30,Y
+000293 72e0      	ANDI R30,LOW(0x20)
+000294 f011      	BREQ _0x2020006
+000295 9a2c      	SBI  0x5,4
+000296 c001      	RJMP _0x2020007
                  _0x2020006:
-000294 982c      	CBI  0x5,4
+000297 982c      	CBI  0x5,4
                  _0x2020007:
-000295 81e8      	LD   R30,Y
-000296 74e0      	ANDI R30,LOW(0x40)
-000297 f011      	BREQ _0x2020008
-000298 9a2d      	SBI  0x5,5
-000299 c001      	RJMP _0x2020009
+000298 81e8      	LD   R30,Y
+000299 74e0      	ANDI R30,LOW(0x40)
+00029a f011      	BREQ _0x2020008
+00029b 9a2d      	SBI  0x5,5
+00029c c001      	RJMP _0x2020009
                  _0x2020008:
-00029a 982d      	CBI  0x5,5
+00029d 982d      	CBI  0x5,5
                  _0x2020009:
-00029b 81e8      	LD   R30,Y
-00029c 78e0      	ANDI R30,LOW(0x80)
-00029d f011      	BREQ _0x202000A
-00029e 9a2e      	SBI  0x5,6
-00029f c001      	RJMP _0x202000B
+00029e 81e8      	LD   R30,Y
+00029f 78e0      	ANDI R30,LOW(0x80)
+0002a0 f011      	BREQ _0x202000A
+0002a1 9a2e      	SBI  0x5,6
+0002a2 c001      	RJMP _0x202000B
                  _0x202000A:
-0002a0 982e      	CBI  0x5,6
+0002a3 982e      	CBI  0x5,6
                  _0x202000B:
                 +
-0002a1 e081     +LDI R24 , LOW ( 1 )
+0002a4 e081     +LDI R24 , LOW ( 1 )
                 +__DELAY_USB_LOOP :
-0002a2 958a     +DEC R24
-0002a3 f7f1     +BRNE __DELAY_USB_LOOP
+0002a5 958a     +DEC R24
+0002a6 f7f1     +BRNE __DELAY_USB_LOOP
                  	__DELAY_USB 1
-0002a4 9a2a      	SBI  0x5,2
+0002a7 9a2a      	SBI  0x5,2
                 +
-0002a5 e082     +LDI R24 , LOW ( 2 )
+0002a8 e082     +LDI R24 , LOW ( 2 )
                 +__DELAY_USB_LOOP :
-0002a6 958a     +DEC R24
-0002a7 f7f1     +BRNE __DELAY_USB_LOOP
+0002a9 958a     +DEC R24
+0002aa f7f1     +BRNE __DELAY_USB_LOOP
                  	__DELAY_USB 2
-0002a8 982a      	CBI  0x5,2
+0002ab 982a      	CBI  0x5,2
                 +
-0002a9 e082     +LDI R24 , LOW ( 2 )
+0002ac e082     +LDI R24 , LOW ( 2 )
                 +__DELAY_USB_LOOP :
-0002aa 958a     +DEC R24
-0002ab f7f1     +BRNE __DELAY_USB_LOOP
+0002ad 958a     +DEC R24
+0002ae f7f1     +BRNE __DELAY_USB_LOOP
                  	__DELAY_USB 2
-0002ac c07b      	RJMP _0x2080001
+0002af c07b      	RJMP _0x2080001
                  __lcd_write_data:
-0002ad 81e8      	LD   R30,Y
-0002ae 93ea      	ST   -Y,R30
-0002af dfd9      	RCALL __lcd_write_nibble_G101
-0002b0 81e8          ld    r30,y
-0002b1 95e2          swap  r30
-0002b2 83e8          st    y,r30
-0002b3 81e8      	LD   R30,Y
-0002b4 93ea      	ST   -Y,R30
-0002b5 dfd3      	RCALL __lcd_write_nibble_G101
+0002b0 81e8      	LD   R30,Y
+0002b1 93ea      	ST   -Y,R30
+0002b2 dfd9      	RCALL __lcd_write_nibble_G101
+0002b3 81e8          ld    r30,y
+0002b4 95e2          swap  r30
+0002b5 83e8          st    y,r30
+0002b6 81e8      	LD   R30,Y
+0002b7 93ea      	ST   -Y,R30
+0002b8 dfd3      	RCALL __lcd_write_nibble_G101
                 +
-0002b6 e181     +LDI R24 , LOW ( 17 )
+0002b9 e181     +LDI R24 , LOW ( 17 )
                 +__DELAY_USB_LOOP :
-0002b7 958a     +DEC R24
-0002b8 f7f1     +BRNE __DELAY_USB_LOOP
+0002ba 958a     +DEC R24
+0002bb f7f1     +BRNE __DELAY_USB_LOOP
                  	__DELAY_USB 17
-0002b9 c06e      	RJMP _0x2080001
+0002bc c06e      	RJMP _0x2080001
                  _lcd_gotoxy:
-0002ba 81e8      	LD   R30,Y
-0002bb e0f0      	LDI  R31,0
-0002bc 57e1      	SUBI R30,LOW(-__base_y_G101)
-0002bd 4ffc      	SBCI R31,HIGH(-__base_y_G101)
-0002be 81e0      	LD   R30,Z
-0002bf 81a9      	LDD  R26,Y+1
-0002c0 0fea      	ADD  R30,R26
-0002c1 93ea      	ST   -Y,R30
-0002c2 dfea      	RCALL __lcd_write_data
-0002c3 8089      	LDD  R8,Y+1
-0002c4 8078      	LDD  R7,Y+0
+0002bd 81e8      	LD   R30,Y
+0002be e0f0      	LDI  R31,0
+0002bf 57e1      	SUBI R30,LOW(-__base_y_G101)
+0002c0 4ffc      	SBCI R31,HIGH(-__base_y_G101)
+0002c1 81e0      	LD   R30,Z
+0002c2 81a9      	LDD  R26,Y+1
+0002c3 0fea      	ADD  R30,R26
+0002c4 93ea      	ST   -Y,R30
+0002c5 dfea      	RCALL __lcd_write_data
+0002c6 8089      	LDD  R8,Y+1
+0002c7 8078      	LDD  R7,Y+0
                  _0x2080002:
-0002c5 9622      	ADIW R28,2
-0002c6 9508      	RET
+0002c8 9622      	ADIW R28,2
+0002c9 9508      	RET
                  _lcd_clear:
-0002c7 e0e2      	LDI  R30,LOW(2)
-0002c8 940e 034d 	CALL SUBOPT_0x7
-0002ca e0ec      	LDI  R30,LOW(12)
-0002cb 93ea      	ST   -Y,R30
-0002cc dfe0      	RCALL __lcd_write_data
-0002cd e0e1      	LDI  R30,LOW(1)
-0002ce 940e 034d 	CALL SUBOPT_0x7
-0002d0 e0e0      	LDI  R30,LOW(0)
-0002d1 2e7e      	MOV  R7,R30
-0002d2 2e8e      	MOV  R8,R30
-0002d3 9508      	RET
+0002ca e0e2      	LDI  R30,LOW(2)
+0002cb 940e 0350 	CALL SUBOPT_0x7
+0002cd e0ec      	LDI  R30,LOW(12)
+0002ce 93ea      	ST   -Y,R30
+0002cf dfe0      	RCALL __lcd_write_data
+0002d0 e0e1      	LDI  R30,LOW(1)
+0002d1 940e 0350 	CALL SUBOPT_0x7
+0002d3 e0e0      	LDI  R30,LOW(0)
+0002d4 2e7e      	MOV  R7,R30
+0002d5 2e8e      	MOV  R8,R30
+0002d6 9508      	RET
                  _lcd_putchar:
-0002d4 81a8      	LD   R26,Y
-0002d5 30aa      	CPI  R26,LOW(0xA)
-0002d6 f011      	BREQ _0x2020011
-0002d7 148a      	CP   R8,R10
-0002d8 f048      	BRLO _0x2020010
+0002d7 81a8      	LD   R26,Y
+0002d8 30aa      	CPI  R26,LOW(0xA)
+0002d9 f011      	BREQ _0x2020011
+0002da 148a      	CP   R8,R10
+0002db f048      	BRLO _0x2020010
                  _0x2020011:
-0002d9 e0e0      	LDI  R30,LOW(0)
-0002da 93ea      	ST   -Y,R30
-0002db 9473      	INC  R7
-0002dc 927a      	ST   -Y,R7
-0002dd dfdc      	RCALL _lcd_gotoxy
-0002de 81a8      	LD   R26,Y
-0002df 30aa      	CPI  R26,LOW(0xA)
-0002e0 f409      	BRNE _0x2020013
-0002e1 c046      	RJMP _0x2080001
+0002dc e0e0      	LDI  R30,LOW(0)
+0002dd 93ea      	ST   -Y,R30
+0002de 9473      	INC  R7
+0002df 927a      	ST   -Y,R7
+0002e0 dfdc      	RCALL _lcd_gotoxy
+0002e1 81a8      	LD   R26,Y
+0002e2 30aa      	CPI  R26,LOW(0xA)
+0002e3 f409      	BRNE _0x2020013
+0002e4 c046      	RJMP _0x2080001
                  _0x2020013:
                  _0x2020010:
-0002e2 9483      	INC  R8
-0002e3 9a28      	SBI  0x5,0
-0002e4 81e8      	LD   R30,Y
-0002e5 93ea      	ST   -Y,R30
-0002e6 dfc6      	RCALL __lcd_write_data
-0002e7 9828      	CBI  0x5,0
-0002e8 c03f      	RJMP _0x2080001
+0002e5 9483      	INC  R8
+0002e6 9a28      	SBI  0x5,0
+0002e7 81e8      	LD   R30,Y
+0002e8 93ea      	ST   -Y,R30
+0002e9 dfc6      	RCALL __lcd_write_data
+0002ea 9828      	CBI  0x5,0
+0002eb c03f      	RJMP _0x2080001
                  _lcd_puts:
-0002e9 931a      	ST   -Y,R17
+0002ec 931a      	ST   -Y,R17
                  _0x2020014:
-0002ea 81a9      	LDD  R26,Y+1
-0002eb 81ba      	LDD  R27,Y+1+1
-0002ec 91ed      	LD   R30,X+
-0002ed 83a9      	STD  Y+1,R26
-0002ee 83ba      	STD  Y+1+1,R27
-0002ef 2f1e      	MOV  R17,R30
-0002f0 30e0      	CPI  R30,0
-0002f1 f019      	BREQ _0x2020016
-0002f2 931a      	ST   -Y,R17
-0002f3 dfe0      	RCALL _lcd_putchar
-0002f4 cff5      	RJMP _0x2020014
+0002ed 81a9      	LDD  R26,Y+1
+0002ee 81ba      	LDD  R27,Y+1+1
+0002ef 91ed      	LD   R30,X+
+0002f0 83a9      	STD  Y+1,R26
+0002f1 83ba      	STD  Y+1+1,R27
+0002f2 2f1e      	MOV  R17,R30
+0002f3 30e0      	CPI  R30,0
+0002f4 f019      	BREQ _0x2020016
+0002f5 931a      	ST   -Y,R17
+0002f6 dfe0      	RCALL _lcd_putchar
+0002f7 cff5      	RJMP _0x2020014
                  _0x2020016:
-0002f5 8118      	LDD  R17,Y+0
-0002f6 9623      	ADIW R28,3
-0002f7 9508      	RET
+0002f8 8118      	LDD  R17,Y+0
+0002f9 9623      	ADIW R28,3
+0002fa 9508      	RET
                  _lcd_init:
-0002f8 9a23      	SBI  0x4,3
-0002f9 9a24      	SBI  0x4,4
-0002fa 9a25      	SBI  0x4,5
-0002fb 9a26      	SBI  0x4,6
-0002fc 9a22      	SBI  0x4,2
-0002fd 9a20      	SBI  0x4,0
-0002fe 9a21      	SBI  0x4,1
-0002ff 982a      	CBI  0x5,2
-000300 9828      	CBI  0x5,0
-000301 9829      	CBI  0x5,1
-000302 80a8      	LDD  R10,Y+0
-000303 81e8      	LD   R30,Y
-000304 58e0      	SUBI R30,-LOW(128)
+0002fb 9a23      	SBI  0x4,3
+0002fc 9a24      	SBI  0x4,4
+0002fd 9a25      	SBI  0x4,5
+0002fe 9a26      	SBI  0x4,6
+0002ff 9a22      	SBI  0x4,2
+000300 9a20      	SBI  0x4,0
+000301 9a21      	SBI  0x4,1
+000302 982a      	CBI  0x5,2
+000303 9828      	CBI  0x5,0
+000304 9829      	CBI  0x5,1
+000305 80a8      	LDD  R10,Y+0
+000306 81e8      	LD   R30,Y
+000307 58e0      	SUBI R30,-LOW(128)
                 +
-000305 93e0 0391+STS __base_y_G101 + ( 2 ) , R30
+000308 93e0 0391+STS __base_y_G101 + ( 2 ) , R30
                  	__PUTB1MN __base_y_G101,2
-000307 81e8      	LD   R30,Y
-000308 54e0      	SUBI R30,-LOW(192)
+00030a 81e8      	LD   R30,Y
+00030b 54e0      	SUBI R30,-LOW(192)
                 +
-000309 93e0 0392+STS __base_y_G101 + ( 3 ) , R30
+00030c 93e0 0392+STS __base_y_G101 + ( 3 ) , R30
                  	__PUTB1MN __base_y_G101,3
-00030b e1e4      	LDI  R30,LOW(20)
-00030c e0f0      	LDI  R31,HIGH(20)
-00030d 940e 032a 	CALL SUBOPT_0x0
-00030f 940e 0353 	CALL SUBOPT_0x8
-000311 940e 0353 	CALL SUBOPT_0x8
-000313 940e 0353 	CALL SUBOPT_0x8
-000315 e2e0      	LDI  R30,LOW(32)
-000316 93ea      	ST   -Y,R30
-000317 df71      	RCALL __lcd_write_nibble_G101
+00030e e1e4      	LDI  R30,LOW(20)
+00030f e0f0      	LDI  R31,HIGH(20)
+000310 940e 032d 	CALL SUBOPT_0x0
+000312 940e 0356 	CALL SUBOPT_0x8
+000314 940e 0356 	CALL SUBOPT_0x8
+000316 940e 0356 	CALL SUBOPT_0x8
+000318 e2e0      	LDI  R30,LOW(32)
+000319 93ea      	ST   -Y,R30
+00031a df71      	RCALL __lcd_write_nibble_G101
                 +
-000318 e281     +LDI R24 , LOW ( 33 )
+00031b e281     +LDI R24 , LOW ( 33 )
                 +__DELAY_USB_LOOP :
-000319 958a     +DEC R24
-00031a f7f1     +BRNE __DELAY_USB_LOOP
+00031c 958a     +DEC R24
+00031d f7f1     +BRNE __DELAY_USB_LOOP
                  	__DELAY_USB 33
-00031b e2e8      	LDI  R30,LOW(40)
-00031c 93ea      	ST   -Y,R30
-00031d df8f      	RCALL __lcd_write_data
-00031e e0e4      	LDI  R30,LOW(4)
+00031e e2e8      	LDI  R30,LOW(40)
 00031f 93ea      	ST   -Y,R30
-000320 df8c      	RCALL __lcd_write_data
-000321 e8e5      	LDI  R30,LOW(133)
+000320 df8f      	RCALL __lcd_write_data
+000321 e0e4      	LDI  R30,LOW(4)
 000322 93ea      	ST   -Y,R30
-000323 df89      	RCALL __lcd_write_data
-000324 e0e6      	LDI  R30,LOW(6)
+000323 df8c      	RCALL __lcd_write_data
+000324 e8e5      	LDI  R30,LOW(133)
 000325 93ea      	ST   -Y,R30
-000326 df86      	RCALL __lcd_write_data
-000327 df9f      	RCALL _lcd_clear
+000326 df89      	RCALL __lcd_write_data
+000327 e0e6      	LDI  R30,LOW(6)
+000328 93ea      	ST   -Y,R30
+000329 df86      	RCALL __lcd_write_data
+00032a df9f      	RCALL _lcd_clear
                  _0x2080001:
-000328 9621      	ADIW R28,1
-000329 9508      	RET
+00032b 9621      	ADIW R28,1
+00032c 9508      	RET
                  
                  	.CSEG
                  
@@ -2343,99 +2344,93 @@ E:\Automatic car wiper\code4\List\wiperCode.asm(1128): warning: .cseg .db misali
                  	.CSEG
                  ;OPTIMIZER ADDED SUBROUTINE, CALLED 5 TIMES, CODE SIZE REDUCTION:5 WORDS
                  SUBOPT_0x0:
-00032a 93fa      	ST   -Y,R31
-00032b 93ea      	ST   -Y,R30
-00032c 940c 035b 	JMP  _delay_ms
+00032d 93fa      	ST   -Y,R31
+00032e 93ea      	ST   -Y,R30
+00032f 940c 035e 	JMP  _delay_ms
                  
                  ;OPTIMIZER ADDED SUBROUTINE, CALLED 6 TIMES, CODE SIZE REDUCTION:17 WORDS
                  SUBOPT_0x1:
-00032e e0e0      	LDI  R30,LOW(0)
-00032f 93ea      	ST   -Y,R30
-000330 93ea      	ST   -Y,R30
-000331 940c 02ba 	JMP  _lcd_gotoxy
+000331 e0e0      	LDI  R30,LOW(0)
+000332 93ea      	ST   -Y,R30
+000333 93ea      	ST   -Y,R30
+000334 940c 02bd 	JMP  _lcd_gotoxy
                  
                  ;OPTIMIZER ADDED SUBROUTINE, CALLED 9 TIMES, CODE SIZE REDUCTION:13 WORDS
                  SUBOPT_0x2:
-000333 93fa      	ST   -Y,R31
-000334 93ea      	ST   -Y,R30
-000335 940c 02e9 	JMP  _lcd_puts
+000336 93fa      	ST   -Y,R31
+000337 93ea      	ST   -Y,R30
+000338 940c 02ec 	JMP  _lcd_puts
                  
                  ;OPTIMIZER ADDED SUBROUTINE, CALLED 2 TIMES, CODE SIZE REDUCTION:2 WORDS
                  SUBOPT_0x3:
-000337 e0e2      	LDI  R30,LOW(2)
-000338 93e0 006f 	STS  111,R30
-00033a e3ed      	LDI  R30,LOW(61)
-00033b 93e0 0089 	STS  137,R30
-00033d e0e9      	LDI  R30,LOW(9)
-00033e 9508      	RET
+00033a e0e2      	LDI  R30,LOW(2)
+00033b 93e0 006f 	STS  111,R30
+00033d e3ed      	LDI  R30,LOW(61)
+00033e 93e0 0089 	STS  137,R30
+000340 e0e9      	LDI  R30,LOW(9)
+000341 9508      	RET
                  
                  ;OPTIMIZER ADDED SUBROUTINE, CALLED 5 TIMES, CODE SIZE REDUCTION:5 WORDS
                  SUBOPT_0x4:
-00033f 940e 02c7 	CALL _lcd_clear
-000341 cfec      	RJMP SUBOPT_0x1
+000342 940e 02ca 	CALL _lcd_clear
+000344 cfec      	RJMP SUBOPT_0x1
                  
                  ;OPTIMIZER ADDED SUBROUTINE, CALLED 3 TIMES, CODE SIZE REDUCTION:1 WORDS
                  SUBOPT_0x5:
-000342 efe4      	LDI  R30,LOW(244)
-000343 93e0 0089 	STS  137,R30
-000345 e1eb      	LDI  R30,LOW(27)
-000346 9508      	RET
+000345 efe4      	LDI  R30,LOW(244)
+000346 93e0 0089 	STS  137,R30
+000348 e1eb      	LDI  R30,LOW(27)
+000349 9508      	RET
                  
                  ;OPTIMIZER ADDED SUBROUTINE, CALLED 2 TIMES, CODE SIZE REDUCTION:1 WORDS
                  SUBOPT_0x6:
-000347 e0e0      	LDI  R30,LOW(0)
-000348 93ea      	ST   -Y,R30
-000349 e0e1      	LDI  R30,LOW(1)
-00034a 93ea      	ST   -Y,R30
-00034b 940c 02ba 	JMP  _lcd_gotoxy
+00034a e0e0      	LDI  R30,LOW(0)
+00034b 93ea      	ST   -Y,R30
+00034c e0e1      	LDI  R30,LOW(1)
+00034d 93ea      	ST   -Y,R30
+00034e 940c 02bd 	JMP  _lcd_gotoxy
                  
                  ;OPTIMIZER ADDED SUBROUTINE, CALLED 2 TIMES, CODE SIZE REDUCTION:2 WORDS
                  SUBOPT_0x7:
-00034d 93ea      	ST   -Y,R30
-00034e 940e 02ad 	CALL __lcd_write_data
-000350 e0e3      	LDI  R30,LOW(3)
-000351 e0f0      	LDI  R31,HIGH(3)
-000352 cfd7      	RJMP SUBOPT_0x0
+000350 93ea      	ST   -Y,R30
+000351 940e 02b0 	CALL __lcd_write_data
+000353 e0e3      	LDI  R30,LOW(3)
+000354 e0f0      	LDI  R31,HIGH(3)
+000355 cfd7      	RJMP SUBOPT_0x0
                  
                  ;OPTIMIZER ADDED SUBROUTINE, CALLED 3 TIMES, CODE SIZE REDUCTION:7 WORDS
                  SUBOPT_0x8:
-000353 e3e0      	LDI  R30,LOW(48)
-000354 93ea      	ST   -Y,R30
-000355 940e 0289 	CALL __lcd_write_nibble_G101
+000356 e3e0      	LDI  R30,LOW(48)
+000357 93ea      	ST   -Y,R30
+000358 940e 028c 	CALL __lcd_write_nibble_G101
                 +
-000357 e281     +LDI R24 , LOW ( 33 )
+00035a e281     +LDI R24 , LOW ( 33 )
                 +__DELAY_USB_LOOP :
-000358 958a     +DEC R24
-000359 f7f1     +BRNE __DELAY_USB_LOOP
+00035b 958a     +DEC R24
+00035c f7f1     +BRNE __DELAY_USB_LOOP
                  	__DELAY_USB 33
-00035a 9508      	RET
+00035d 9508      	RET
                  
                  
                  	.CSEG
                  _delay_ms:
-00035b 91e9      	ld   r30,y+
-00035c 91f9      	ld   r31,y+
-00035d 9630      	adiw r30,0
-00035e f039      	breq __delay_ms1
+00035e 91e9      	ld   r30,y+
+00035f 91f9      	ld   r31,y+
+000360 9630      	adiw r30,0
+000361 f039      	breq __delay_ms1
                  __delay_ms0:
                 +
-00035f ef8a     +LDI R24 , LOW ( 0xFA )
-000360 e090     +LDI R25 , HIGH ( 0xFA )
+000362 ef8a     +LDI R24 , LOW ( 0xFA )
+000363 e090     +LDI R25 , HIGH ( 0xFA )
                 +__DELAY_USW_LOOP :
-000361 9701     +SBIW R24 , 1
-000362 f7f1     +BRNE __DELAY_USW_LOOP
+000364 9701     +SBIW R24 , 1
+000365 f7f1     +BRNE __DELAY_USW_LOOP
                  	__DELAY_USW 0xFA
-000363 95a8      	wdr
-000364 9731      	sbiw r30,1
-000365 f7c9      	brne __delay_ms0
+000366 95a8      	wdr
+000367 9731      	sbiw r30,1
+000368 f7c9      	brne __delay_ms0
                  __delay_ms1:
-000366 9508      	ret
-                 
-                 __CPW02:
-000367 2400      	CLR  R0
-000368 160a      	CP   R0,R26
-000369 060b      	CPC  R0,R27
-00036a 9508      	RET
+000369 9508      	ret
                  
                  ;END OF CODE MARKER
                  __END_OF_CODE:
@@ -2456,30 +2451,30 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 ATmega328P register use summary:
-r0 :  16 r1 :   3 r2 :   0 r3 :   8 r4 :   8 r5 :   6 r6 :   6 r7 :   4 
+r0 :   8 r1 :   3 r2 :   0 r3 :   8 r4 :   8 r5 :   6 r6 :   6 r7 :   4 
 r8 :   4 r9 :   0 r10:   2 r11:   0 r12:   0 r13:   0 r14:   0 r15:   2 
 r16:   0 r17:   4 r18:   0 r19:   0 r20:   0 r21:   0 r22:   4 r23:   2 
-r24:  25 r25:   5 r26:  36 r27:  15 r28:   4 r29:   1 r30: 213 r31:  50 
-x  :   4 y  :  92 z  :   8 
+r24:  25 r25:   5 r26:  37 r27:  15 r28:   4 r29:   1 r30: 217 r31:  54 
+x  :   4 y  :  94 z  :   8 
 Registers used: 24 out of 35 (68.6%)
 
 ATmega328P instruction use summary:
 .lds  :   0 .lds.l:   0 .sts  :   0 .sts.l:   0 adc   :   1 add   :   2 
 adiw  :   4 and   :   0 andi  :   5 asr   :   0 bclr  :   0 bld   :   0 
-brbc  :   0 brbs  :   0 brcc  :   0 brcs  :   0 break :   0 breq  :  10 
-brge  :   0 brhc  :   0 brhs  :   0 brid  :   0 brie  :   0 brlo  :   9 
+brbc  :   0 brbs  :   0 brcc  :   0 brcs  :   0 break :   0 breq  :   9 
+brge  :   0 brhc  :   0 brhs  :   0 brid  :   0 brie  :   0 brlo  :  10 
 brlt  :   0 brmi  :   0 brne  :  21 brpl  :   0 brsh  :   2 brtc  :   0 
-brts  :   0 brvc  :   0 brvs  :   0 bset  :   0 bst   :   0 call  :  36 
+brts  :   0 brvc  :   0 brvs  :   0 bset  :   0 bst   :   0 call  :  35 
 cbi   :  10 cbr   :   1 clc   :   0 clh   :   0 cli   :   1 cln   :   0 
-clr   :   6 cls   :   0 clt   :   0 clv   :   0 clz   :   0 com   :   0 
+clr   :   4 cls   :   0 clt   :   0 clv   :   0 clz   :   0 com   :   0 
 cp    :  10 cpc   :  13 cpi   :  11 cpse  :   0 dec   :   8 des   :   0 
 eor   :   0 fmul  :   0 fmuls :   0 fmulsu:   0 icall :   0 ijmp  :   0 
-in    :   3 inc   :   2 jmp   :  33 ld    :  36 ldd   :  10 ldi   : 135 
-lds   :   5 lpm   :   7 lsl   :   0 lsr   :   0 mov   :   7 movw  :   3 
-mul   :   0 muls  :   0 mulsu :   0 neg   :   0 nop   :   0 or    :   2 
-ori   :   3 out   :  17 pop   :   0 push  :   0 rcall :  25 ret   :  13 
-reti  :   3 rjmp  :  58 rol   :   0 ror   :   0 sbc   :   0 sbci  :   1 
-sbi   :  22 sbic  :  13 sbis  :   9 sbiw  :   5 sbr   :   0 sbrc  :   0 
+in    :   3 inc   :   2 jmp   :  33 ld    :  37 ldd   :  11 ldi   : 139 
+lds   :   5 lpm   :   7 lsl   :   0 lsr   :   0 mov   :   6 movw  :   3 
+mul   :   0 muls  :   0 mulsu :   0 neg   :   0 nop   :   0 or    :   1 
+ori   :   3 out   :  17 pop   :   0 push  :   0 rcall :  25 ret   :  12 
+reti  :   2 rjmp  :  58 rol   :   0 ror   :   0 sbc   :   0 sbci  :   1 
+sbi   :  22 sbic  :  13 sbis  :   9 sbiw  :   6 sbr   :   0 sbrc  :   0 
 sbrs  :   0 sec   :   0 seh   :   0 sei   :   1 sen   :   0 ser   :   0 
 ses   :   0 set   :   0 sev   :   0 sez   :   0 sleep :   0 spm   :   0 
 st    :  49 std   :   2 sts   :  28 sub   :   0 subi  :   3 swap  :   1 
@@ -2489,7 +2484,7 @@ Instructions used: 46 out of 116 (39.7%)
 ATmega328P memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x0006d6   1500    250   1750   32768   5.3%
+[.cseg] 0x000000 0x0006d4   1498    250   1748   32768   5.3%
 [.dseg] 0x000100 0x000393      0    147    147    2303   6.4%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 

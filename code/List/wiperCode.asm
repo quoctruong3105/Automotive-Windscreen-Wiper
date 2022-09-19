@@ -1076,7 +1076,7 @@ __START_OF_CODE:
 ;INTERRUPT VECTORS
 	JMP  __RESET
 	JMP  _ext_int0_isr
-	JMP  _ext_int1_isr
+	JMP  0x00
 	JMP  0x00
 	JMP  0x00
 	JMP  0x00
@@ -1310,7 +1310,7 @@ __GLOBAL_INI_END:
 ;
 ;unsigned int rainFall, setTimeButton;
 ;
-;// Timer 1 output compare A interrupt service routine
+;// Timer1 is used to delay, wipe fast or low is depended on OCR1A.
 ;interrupt [TIM1_COMPA] void timer1_compa_isr(void)
 ; 0000 001C {
 
@@ -1332,7 +1332,7 @@ _timer1_compa_isr:
 ; 0000 001D     if(wasSw == On)
 	SBIS 0x6,5
 ; 0000 001E     {
-; 0000 001F         PORTD.0 = 1;
+; 0000 001F         PORTD.0 = 1; //Water Jet Motor is actived
 	SBI  0xB,0
 ; 0000 0020     }
 ; 0000 0021     OCR0B = 10;
@@ -1392,57 +1392,50 @@ _0x6:
 	LD   R30,Y+
 	RETI
 ;
-;// Washer
-;interrupt [EXT_INT1] void ext_int1_isr(void)
-; 0000 0032 {
-_ext_int1_isr:
-; 0000 0033 // Place your code here
-; 0000 0034 
-; 0000 0035 }
-	RETI
-;
 ;// Read Rain Sensor
 ;unsigned int read_adc(unsigned char adc_input)
-; 0000 0039 {
+; 0000 0032 {
 _read_adc:
-; 0000 003A ADMUX=adc_input | (ADC_VREF_TYPE & 0xff);
+; 0000 0033 ADMUX=adc_input | (ADC_VREF_TYPE & 0xff);
 ;	adc_input -> Y+0
 	LD   R30,Y
 	ORI  R30,0x40
 	STS  124,R30
-; 0000 003B // Delay needed for the stabilization of the ADC input voltage
-; 0000 003C delay_us(10);
+; 0000 0034 // Delay needed for the stabilization of the ADC input voltage
+; 0000 0035 delay_us(10);
 	__DELAY_USB 3
-; 0000 003D // Start the AD conversion
-; 0000 003E ADCSRA|=0x40;
+; 0000 0036 // Start the AD conversion
+; 0000 0037 ADCSRA|=0x40;
 	LDS  R30,122
 	ORI  R30,0x40
 	STS  122,R30
-; 0000 003F // Wait for the AD conversion to complete
-; 0000 0040 while ((ADCSRA & 0x10)==0);
+; 0000 0038 // Wait for the AD conversion to complete
+; 0000 0039 while ((ADCSRA & 0x10)==0);
 _0x7:
 	LDS  R30,122
 	ANDI R30,LOW(0x10)
 	BREQ _0x7
-; 0000 0041 ADCSRA|=0x10;
+; 0000 003A ADCSRA|=0x10;
 	LDS  R30,122
 	ORI  R30,0x10
 	STS  122,R30
-; 0000 0042 return ADCW;
+; 0000 003B return ADCW;
 	LDS  R30,120
 	LDS  R31,120+1
 	JMP  _0x2080001
-; 0000 0043 }
+; 0000 003C }
 ;
 ;void thongBaoLCD(unsigned int x)
-; 0000 0046 {
+; 0000 003F {
 _thongBaoLCD:
-; 0000 0047     if(x > 0 && x < 350)
+; 0000 0040     if(x > 10 && x < 350)
 ;	x -> Y+0
 	LD   R26,Y
 	LDD  R27,Y+1
-	CALL __CPW02
-	BRSH _0xB
+	SBIW R26,11
+	BRLO _0xB
+	LD   R26,Y
+	LDD  R27,Y+1
 	CPI  R26,LOW(0x15E)
 	LDI  R30,HIGH(0x15E)
 	CPC  R27,R30
@@ -1450,12 +1443,12 @@ _thongBaoLCD:
 _0xB:
 	RJMP _0xA
 _0xC:
-; 0000 0048     {
-; 0000 0049         lcd_puts("RainFall: Slight");
+; 0000 0041     {
+; 0000 0042         lcd_puts("RainFall: Slight");
 	__POINTW1MN _0xD,0
 	RJMP _0x5E
-; 0000 004A     }
-; 0000 004B     else if(x >= 350 && x < 700)
+; 0000 0043     }
+; 0000 0044     else if(x >= 350 && x < 700)
 _0xA:
 	LD   R26,Y
 	LDD  R27,Y+1
@@ -1470,12 +1463,12 @@ _0xA:
 _0x10:
 	RJMP _0xF
 _0x11:
-; 0000 004C     {
-; 0000 004D         lcd_puts("RainFall: Medium");
+; 0000 0045     {
+; 0000 0046         lcd_puts("RainFall: Medium");
 	__POINTW1MN _0xD,17
 	RJMP _0x5E
-; 0000 004E     }
-; 0000 004F     else if(x >= 700)
+; 0000 0047     }
+; 0000 0048     else if(x >= 700)
 _0xF:
 	LD   R26,Y
 	LDD  R27,Y+1
@@ -1483,22 +1476,22 @@ _0xF:
 	LDI  R30,HIGH(0x2BC)
 	CPC  R27,R30
 	BRLO _0x13
-; 0000 0050     {
-; 0000 0051         lcd_puts("RainFall: Heavy");
+; 0000 0049     {
+; 0000 004A         lcd_puts("RainFall: Heavy");
 	__POINTW1MN _0xD,34
 	RJMP _0x5E
-; 0000 0052     }
-; 0000 0053     else
+; 0000 004B     }
+; 0000 004C     else
 _0x13:
-; 0000 0054     {
-; 0000 0055         lcd_puts("There's no rain");
+; 0000 004D     {
+; 0000 004E         lcd_puts("There's no rain");
 	__POINTW1MN _0xD,50
 _0x5E:
 	ST   -Y,R31
 	ST   -Y,R30
 	CALL _lcd_puts
-; 0000 0056     }
-; 0000 0057 }
+; 0000 004F     }
+; 0000 0050 }
 	JMP  _0x2080002
 
 	.DSEG
@@ -1506,90 +1499,90 @@ _0xD:
 	.BYTE 0x42
 ;
 ;void washer()
-; 0000 005A {
+; 0000 0053 {
 
 	.CSEG
 _washer:
-; 0000 005B     lcd_gotoxy(0,0);
+; 0000 0054     lcd_gotoxy(0,0);
 	CALL SUBOPT_0x1
-; 0000 005C     lcd_puts("Washering");
+; 0000 0055     lcd_puts("Washering");
 	__POINTW1MN _0x15,0
 	CALL SUBOPT_0x2
-; 0000 005D     PORTD.0 = 0;
+; 0000 0056     PORTD.0 = 0;
 	CBI  0xB,0
-; 0000 005E     TIMSK1 = 0b00000010;
+; 0000 0057     TIMSK1 = 0b00000010;
 	CALL SUBOPT_0x3
-; 0000 005F     OCR1AH = fastH;
-; 0000 0060     OCR1AL = fastL;
+; 0000 0058     OCR1AH = fastH;
+; 0000 0059     OCR1AL = fastL;
 	RJMP _0x2080003
-; 0000 0061 }
+; 0000 005A }
 
 	.DSEG
 _0x15:
 	.BYTE 0xA
 ;
 ;void modeHigh()
-; 0000 0064 {
+; 0000 005D {
 
 	.CSEG
 _modeHigh:
-; 0000 0065     lcd_clear();
+; 0000 005E     lcd_clear();
 	CALL SUBOPT_0x4
-; 0000 0066     lcd_gotoxy(0,0);
-; 0000 0067     while(wasSw == On)
+; 0000 005F     lcd_gotoxy(0,0);
+; 0000 0060     while(wasSw == On)
 _0x18:
 	SBIC 0x6,5
 	RJMP _0x1A
-; 0000 0068     {
-; 0000 0069         washer();
+; 0000 0061     {
+; 0000 0062         washer();
 	RCALL _washer
-; 0000 006A     }
+; 0000 0063     }
 	RJMP _0x18
 _0x1A:
-; 0000 006B     lcd_puts("Mode: high");
+; 0000 0064     lcd_puts("Mode: high");
 	__POINTW1MN _0x1B,0
 	CALL SUBOPT_0x2
-; 0000 006C     TIMSK1 = 0b00000010;
+; 0000 0065     TIMSK1 = 0b00000010;
 	CALL SUBOPT_0x3
-; 0000 006D     OCR1AH = fastH;
-; 0000 006E     OCR1AL = fastL;
+; 0000 0066     OCR1AH = fastH;
+; 0000 0067     OCR1AL = fastL;
 	RJMP _0x2080003
-; 0000 006F }
+; 0000 0068 }
 
 	.DSEG
 _0x1B:
 	.BYTE 0xB
 ;
 ;void modeLow()
-; 0000 0072 {
+; 0000 006B {
 
 	.CSEG
 _modeLow:
-; 0000 0073     lcd_clear();
+; 0000 006C     lcd_clear();
 	CALL SUBOPT_0x4
-; 0000 0074     lcd_gotoxy(0,0);
-; 0000 0075     while(wasSw == On)
+; 0000 006D     lcd_gotoxy(0,0);
+; 0000 006E     while(wasSw == On)
 _0x1C:
 	SBIC 0x6,5
 	RJMP _0x1E
-; 0000 0076     {
-; 0000 0077         washer();
+; 0000 006F     {
+; 0000 0070         washer();
 	RCALL _washer
-; 0000 0078     }
+; 0000 0071     }
 	RJMP _0x1C
 _0x1E:
-; 0000 0079     lcd_puts("Mode: slow");
+; 0000 0072     lcd_puts("Mode: slow");
 	__POINTW1MN _0x1F,0
 	CALL SUBOPT_0x2
-; 0000 007A     TIMSK1 = 0b00000010;
+; 0000 0073     TIMSK1 = 0b00000010;
 	LDI  R30,LOW(2)
 	STS  111,R30
-; 0000 007B     OCR1AH = slowH;
+; 0000 0074     OCR1AH = slowH;
 	CALL SUBOPT_0x5
-; 0000 007C     OCR1AL = slowL;
+; 0000 0075     OCR1AL = slowL;
 _0x2080003:
 	STS  136,R30
-; 0000 007D }
+; 0000 0076 }
 	RET
 
 	.DSEG
@@ -1597,85 +1590,85 @@ _0x1F:
 	.BYTE 0xB
 ;
 ;void modeInterrupt()
-; 0000 0080 {
+; 0000 0079 {
 
 	.CSEG
 _modeInterrupt:
-; 0000 0081     lcd_clear();
+; 0000 007A     lcd_clear();
 	CALL SUBOPT_0x4
-; 0000 0082     lcd_gotoxy(0,0);
-; 0000 0083     while(wasSw == On)
+; 0000 007B     lcd_gotoxy(0,0);
+; 0000 007C     while(wasSw == On)
 _0x20:
 	SBIC 0x6,5
 	RJMP _0x22
-; 0000 0084     {
-; 0000 0085         washer();
+; 0000 007D     {
+; 0000 007E         washer();
 	RCALL _washer
-; 0000 0086     }
+; 0000 007F     }
 	RJMP _0x20
 _0x22:
-; 0000 0087     lcd_puts("Mode: Interrupt");
+; 0000 0080     lcd_puts("Mode: Interrupt");
 	__POINTW1MN _0x23,0
 	CALL SUBOPT_0x2
-; 0000 0088     lcd_gotoxy(0,1);
+; 0000 0081     lcd_gotoxy(0,1);
 	CALL SUBOPT_0x6
-; 0000 0089     lcd_puts("Period: ");
+; 0000 0082     lcd_puts("Period: ");
 	__POINTW1MN _0x23,16
 	CALL SUBOPT_0x2
-; 0000 008A     TIMSK1 = 0b00000010;
+; 0000 0083     TIMSK1 = 0b00000010;
 	LDI  R30,LOW(2)
 	STS  111,R30
-; 0000 008B     if(setTimeButton == 0)
+; 0000 0084     if(setTimeButton == 0)
 	MOV  R0,R5
 	OR   R0,R6
 	BRNE _0x24
-; 0000 008C     {
-; 0000 008D         lcd_puts("+");
+; 0000 0085     {
+; 0000 0086         lcd_puts("+");
 	__POINTW1MN _0x23,25
 	CALL SUBOPT_0x2
-; 0000 008E         OCR1AH = slowH;
+; 0000 0087         OCR1AH = slowH;
 	CALL SUBOPT_0x5
-; 0000 008F         OCR1AL = slowL;
+; 0000 0088         OCR1AL = slowL;
 	RJMP _0x5F
-; 0000 0090     }
-; 0000 0091     else if(setTimeButton == 1)
+; 0000 0089     }
+; 0000 008A     else if(setTimeButton == 1)
 _0x24:
 	LDI  R30,LOW(1)
 	LDI  R31,HIGH(1)
 	CP   R30,R5
 	CPC  R31,R6
 	BRNE _0x26
-; 0000 0092     {
-; 0000 0093         lcd_puts("++");
+; 0000 008B     {
+; 0000 008C         lcd_puts("++");
 	__POINTW1MN _0x23,27
 	CALL SUBOPT_0x2
-; 0000 0094         OCR1AH = medH;
+; 0000 008D         OCR1AH = medH;
 	LDI  R30,LOW(152)
 	STS  137,R30
-; 0000 0095         OCR1AL = medL;
+; 0000 008E         OCR1AL = medL;
 	LDI  R30,LOW(150)
 	RJMP _0x5F
-; 0000 0096     }
-; 0000 0097     else if(setTimeButton == 2)
+; 0000 008F     }
+; 0000 0090     else if(setTimeButton == 2)
 _0x26:
 	LDI  R30,LOW(2)
 	LDI  R31,HIGH(2)
 	CP   R30,R5
 	CPC  R31,R6
 	BRNE _0x28
-; 0000 0098     {
-; 0000 0099         lcd_puts("+++");
+; 0000 0091     {
+; 0000 0092         lcd_puts("+++");
 	__POINTW1MN _0x23,30
 	CALL SUBOPT_0x2
-; 0000 009A         OCR1AH = fastH;
+; 0000 0093         OCR1AH = fastH;
 	LDI  R30,LOW(61)
 	STS  137,R30
-; 0000 009B         OCR1AL = fastL;
+; 0000 0094         OCR1AL = fastL;
 	LDI  R30,LOW(9)
 _0x5F:
 	STS  136,R30
-; 0000 009C     }
-; 0000 009D }
+; 0000 0095     }
+; 0000 0096 }
 _0x28:
 	RET
 
@@ -1684,61 +1677,64 @@ _0x23:
 	.BYTE 0x22
 ;
 ;void modeAuto()
-; 0000 00A0 {
+; 0000 0099 {
 
 	.CSEG
 _modeAuto:
-; 0000 00A1     lcd_clear();
+; 0000 009A     lcd_clear();
 	CALL SUBOPT_0x4
-; 0000 00A2     lcd_gotoxy(0,0);
-; 0000 00A3     while(wasSw == On)
+; 0000 009B     lcd_gotoxy(0,0);
+; 0000 009C     while(wasSw == On)
 _0x29:
 	SBIC 0x6,5
 	RJMP _0x2B
-; 0000 00A4     {
-; 0000 00A5         washer();
+; 0000 009D     {
+; 0000 009E         washer();
 	RCALL _washer
-; 0000 00A6     }
+; 0000 009F     }
 	RJMP _0x29
 _0x2B:
-; 0000 00A7     lcd_puts("Mode: Auto");
+; 0000 00A0     lcd_puts("Mode: Auto");
 	__POINTW1MN _0x2C,0
 	CALL SUBOPT_0x2
-; 0000 00A8     rainFall = read_adc(0);
+; 0000 00A1     rainFall = read_adc(0);
 	LDI  R30,LOW(0)
 	ST   -Y,R30
 	RCALL _read_adc
 	__PUTW1R 3,4
-; 0000 00A9     lcd_gotoxy(0,1);
+; 0000 00A2     lcd_gotoxy(0,1);
 	CALL SUBOPT_0x6
-; 0000 00AA     thongBaoLCD(rainFall);
+; 0000 00A3     thongBaoLCD(rainFall);
 	ST   -Y,R4
 	ST   -Y,R3
 	RCALL _thongBaoLCD
-; 0000 00AB     //Allow interrup
-; 0000 00AC     if(rainFall != 0) //When rain sensor receive rain sginal -> allow interrupt
-	MOV  R0,R3
-	OR   R0,R4
-	BREQ _0x2D
-; 0000 00AD     {
-; 0000 00AE         TIMSK1 = 0b00000010;
+; 0000 00A4     //Allow interrup
+; 0000 00A5     if(rainFall > 10) //When rain sensor receive rain sginal -> allow interrupt
+	LDI  R30,LOW(10)
+	LDI  R31,HIGH(10)
+	CP   R30,R3
+	CPC  R31,R4
+	BRSH _0x2D
+; 0000 00A6     {
+; 0000 00A7         TIMSK1 = 0b00000010;
 	LDI  R30,LOW(2)
 	RJMP _0x60
-; 0000 00AF     }
-; 0000 00B0     else //When there is no rain -> no interrupt -> Servo does not operate
+; 0000 00A8     }
+; 0000 00A9     else //When there is no rain -> no interrupt -> Servo does not operate
 _0x2D:
-; 0000 00B1     {
-; 0000 00B2         TIMSK1 = 0b00000000;
+; 0000 00AA     {
+; 0000 00AB         TIMSK1 = 0b00000000;
 	LDI  R30,LOW(0)
 _0x60:
 	STS  111,R30
-; 0000 00B3     }
-; 0000 00B4 
-; 0000 00B5     //Delay depend on ADC using Timer1
-; 0000 00B6     if(rainFall > 0 && rainFall < 350) // Slight
-	CLR  R0
-	CP   R0,R3
-	CPC  R0,R4
+; 0000 00AC     }
+; 0000 00AD 
+; 0000 00AE     //Delay depend on ADC using Timer1
+; 0000 00AF     if(rainFall > 10 && rainFall < 350) // Slight
+	LDI  R30,LOW(10)
+	LDI  R31,HIGH(10)
+	CP   R30,R3
+	CPC  R31,R4
 	BRSH _0x30
 	LDI  R30,LOW(350)
 	LDI  R31,HIGH(350)
@@ -1748,13 +1744,13 @@ _0x60:
 _0x30:
 	RJMP _0x2F
 _0x31:
-; 0000 00B7     {
-; 0000 00B8         OCR1AH = slowH;
+; 0000 00B0     {
+; 0000 00B1         OCR1AH = slowH;
 	CALL SUBOPT_0x5
-; 0000 00B9         OCR1AL = slowL;
+; 0000 00B2         OCR1AL = slowL;
 	RJMP _0x61
-; 0000 00BA     }
-; 0000 00BB     else if(rainFall >= 350 && rainFall < 700) // Medium
+; 0000 00B3     }
+; 0000 00B4     else if(rainFall >= 350 && rainFall < 700) // Medium
 _0x2F:
 	LDI  R30,LOW(350)
 	LDI  R31,HIGH(350)
@@ -1769,31 +1765,31 @@ _0x2F:
 _0x34:
 	RJMP _0x33
 _0x35:
-; 0000 00BC     {
-; 0000 00BD         OCR1AH = medH;
+; 0000 00B5     {
+; 0000 00B6         OCR1AH = medH;
 	LDI  R30,LOW(152)
 	STS  137,R30
-; 0000 00BE         OCR1AL = medL;
+; 0000 00B7         OCR1AL = medL;
 	LDI  R30,LOW(150)
 	RJMP _0x61
-; 0000 00BF     }
-; 0000 00C0     else if(rainFall >= 700) // Heavy
+; 0000 00B8     }
+; 0000 00B9     else if(rainFall >= 700) // Heavy
 _0x33:
 	LDI  R30,LOW(700)
 	LDI  R31,HIGH(700)
 	CP   R3,R30
 	CPC  R4,R31
 	BRLO _0x37
-; 0000 00C1     {
-; 0000 00C2         OCR1AH = fastH;
+; 0000 00BA     {
+; 0000 00BB         OCR1AH = fastH;
 	LDI  R30,LOW(61)
 	STS  137,R30
-; 0000 00C3         OCR1AL = fastL;
+; 0000 00BC         OCR1AL = fastL;
 	LDI  R30,LOW(9)
 _0x61:
 	STS  136,R30
-; 0000 00C4     }
-; 0000 00C5 }
+; 0000 00BD     }
+; 0000 00BE }
 _0x37:
 	RET
 
@@ -1802,99 +1798,104 @@ _0x2C:
 	.BYTE 0xB
 ;
 ;void off()
-; 0000 00C8 {
+; 0000 00C1 {
 
 	.CSEG
 _off:
-; 0000 00C9     TIMSK1 = 0b00000000;
+; 0000 00C2     TIMSK1 = 0b00000000;
 	LDI  R30,LOW(0)
 	STS  111,R30
-; 0000 00CA     lcd_clear();
+; 0000 00C3     lcd_clear();
 	CALL SUBOPT_0x4
-; 0000 00CB     lcd_gotoxy(0,0);
-; 0000 00CC }
+; 0000 00C4     lcd_gotoxy(0,0);
+; 0000 00C5 }
 	RET
 ;
 ;void main(void)
-; 0000 00CF {
+; 0000 00C8 {
 _main:
-; 0000 00D0 
-; 0000 00D1 // Timer/Counter 0 initialization
-; 0000 00D2 TCCR0A=0b00100011;
+; 0000 00C9 
+; 0000 00CA // Timer/Counter 0 initialization
+; 0000 00CB // Mode: fastPWM (Top is OCR0A)
+; 0000 00CC // Prescaler: 1024
+; 0000 00CD TCCR0A=0b00100011;
 	LDI  R30,LOW(35)
 	OUT  0x24,R30
-; 0000 00D3 TCCR0B=0b00001101;
+; 0000 00CE TCCR0B=0b00001101;
 	LDI  R30,LOW(13)
 	OUT  0x25,R30
-; 0000 00D4 OCR0A=100;
+; 0000 00CF OCR0A=100;
 	LDI  R30,LOW(100)
 	OUT  0x27,R30
-; 0000 00D5 OCR0B=5;
+; 0000 00D0 OCR0B=5;
 	LDI  R30,LOW(5)
 	OUT  0x28,R30
-; 0000 00D6 
-; 0000 00D7 // Timer/Counter 1 initialization
-; 0000 00D8 TCCR1A=0b00000000; // Mode CTC: TOP OCR1A
+; 0000 00D1 
+; 0000 00D2 // Timer/Counter 1 initialization
+; 0000 00D3 // Mode: CTC (Top is OCR1A)
+; 0000 00D4 // Prescaler: 256 -> f: 256/8 = 32 muys
+; 0000 00D5 // Interrupt and top will be set depend on mode
+; 0000 00D6 TCCR1A=0b00000000;
 	LDI  R30,LOW(0)
 	STS  128,R30
-; 0000 00D9 TCCR1B=0b00001100; // Presacle: 256 -> f: 256/8 = 32 muys
+; 0000 00D7 TCCR1B=0b00001100;
 	LDI  R30,LOW(12)
 	STS  129,R30
-; 0000 00DA TIMSK1=0b00000000; // Interrupt will be set depend on mode
+; 0000 00D8 TIMSK1=0b00000000;
 	LDI  R30,LOW(0)
 	STS  111,R30
-; 0000 00DB 
-; 0000 00DC // ADC initialization
-; 0000 00DD DIDR0=0x01;
+; 0000 00D9 
+; 0000 00DA // ADC initialization
+; 0000 00DB DIDR0=0x01;
 	LDI  R30,LOW(1)
 	STS  126,R30
-; 0000 00DE ADMUX=ADC_VREF_TYPE & 0xff;
+; 0000 00DC ADMUX=ADC_VREF_TYPE & 0xff;
 	LDI  R30,LOW(64)
 	STS  124,R30
-; 0000 00DF ADCSRA=0x81;
+; 0000 00DD ADCSRA=0x81;
 	LDI  R30,LOW(129)
 	STS  122,R30
-; 0000 00E0 
-; 0000 00E1 // External Interrupt(s) initialization
-; 0000 00E2 EICRA=0x02;
+; 0000 00DE 
+; 0000 00DF // External Interrupt(s) initialization
+; 0000 00E0 EICRA=0x02;
 	LDI  R30,LOW(2)
 	STS  105,R30
-; 0000 00E3 EIMSK=0x01;
+; 0000 00E1 EIMSK=0x01;
 	LDI  R30,LOW(1)
 	OUT  0x1D,R30
-; 0000 00E4 EIFR=0x01;
+; 0000 00E2 EIFR=0x01;
 	OUT  0x1C,R30
-; 0000 00E5 
-; 0000 00E6 DDRD.5 = 1; // Output PWM
+; 0000 00E3 
+; 0000 00E4 DDRD.5 = 1; // Output PWM
 	SBI  0xA,5
-; 0000 00E7 DDRD.0 = 1; // Output Motor jet water
+; 0000 00E5 DDRD.0 = 1; // Output Motor jet water
 	SBI  0xA,0
-; 0000 00E8 PORTC.1 = 1; // Mode High switch
+; 0000 00E6 PORTC.1 = 1; // Mode High switch
 	SBI  0x8,1
-; 0000 00E9 PORTC.2 = 1; // Mode Low switch
+; 0000 00E7 PORTC.2 = 1; // Mode Low switch
 	SBI  0x8,2
-; 0000 00EA PORTC.3 = 1; // Mode Interrupt switch
+; 0000 00E8 PORTC.3 = 1; // Mode Interrupt switch
 	SBI  0x8,3
-; 0000 00EB PORTC.4 = 1; // Mode Auto switch
+; 0000 00E9 PORTC.4 = 1; // Mode Auto switch
 	SBI  0x8,4
-; 0000 00EC PORTC.5 = 1; // Washer Switch
+; 0000 00EA PORTC.5 = 1; // Washer Switch
 	SBI  0x8,5
-; 0000 00ED PORTD.2 = 1; // Set time for mode interrupt button
+; 0000 00EB PORTD.2 = 1; // Set time for mode interrupt button
 	SBI  0xB,2
-; 0000 00EE 
-; 0000 00EF // Characters/line: 16
-; 0000 00F0 lcd_init(16);
+; 0000 00EC 
+; 0000 00ED // Characters/line: 16
+; 0000 00EE lcd_init(16);
 	LDI  R30,LOW(16)
 	ST   -Y,R30
 	CALL _lcd_init
-; 0000 00F1 
-; 0000 00F2 #asm("sei")
+; 0000 00EF 
+; 0000 00F0 #asm("sei")
 	sei
-; 0000 00F3 
-; 0000 00F4 while (1)
+; 0000 00F1 
+; 0000 00F2 while (1)
 _0x48:
-; 0000 00F5       {
-; 0000 00F6         if(autoSw == On && hiSw == Off && loSw == Off && intSw == Off)
+; 0000 00F3       {
+; 0000 00F4         if(autoSw == On && hiSw == Off && loSw == Off && intSw == Off)
 	LDI  R26,0
 	SBIC 0x6,4
 	LDI  R26,1
@@ -1909,11 +1910,11 @@ _0x48:
 _0x4C:
 	RJMP _0x4B
 _0x4D:
-; 0000 00F7         {
-; 0000 00F8             modeAuto();
+; 0000 00F5         {
+; 0000 00F6             modeAuto();
 	RCALL _modeAuto
-; 0000 00F9         }
-; 0000 00FA         else if(hiSw == On && loSw == Off && intSw == Off && autoSw == Off)
+; 0000 00F7         }
+; 0000 00F8         else if(hiSw == On && loSw == Off && intSw == Off && autoSw == Off)
 	RJMP _0x4E
 _0x4B:
 	LDI  R26,0
@@ -1930,11 +1931,11 @@ _0x4B:
 _0x50:
 	RJMP _0x4F
 _0x51:
-; 0000 00FB         {
-; 0000 00FC             modeHigh();
+; 0000 00F9         {
+; 0000 00FA             modeHigh();
 	RCALL _modeHigh
-; 0000 00FD         }
-; 0000 00FE         else if(loSw == On && hiSw == Off && intSw == Off && autoSw == Off)
+; 0000 00FB         }
+; 0000 00FC         else if(loSw == On && hiSw == Off && intSw == Off && autoSw == Off)
 	RJMP _0x52
 _0x4F:
 	LDI  R26,0
@@ -1951,12 +1952,12 @@ _0x4F:
 _0x54:
 	RJMP _0x53
 _0x55:
-; 0000 00FF         {
-; 0000 0100             modeLow();
+; 0000 00FD         {
+; 0000 00FE             modeLow();
 	RCALL _modeLow
-; 0000 0101         }
-; 0000 0102 
-; 0000 0103         else if(intSw == On && hiSw == Off && loSw == Off && autoSw == Off)
+; 0000 00FF         }
+; 0000 0100 
+; 0000 0101         else if(intSw == On && hiSw == Off && loSw == Off && autoSw == Off)
 	RJMP _0x56
 _0x53:
 	LDI  R26,0
@@ -1973,38 +1974,38 @@ _0x53:
 _0x58:
 	RJMP _0x57
 _0x59:
-; 0000 0104         {
-; 0000 0105             modeInterrupt();
+; 0000 0102         {
+; 0000 0103             modeInterrupt();
 	RCALL _modeInterrupt
-; 0000 0106         }
-; 0000 0107         else if(wasSw == On)
+; 0000 0104         }
+; 0000 0105         else if(wasSw == On)
 	RJMP _0x5A
 _0x57:
 	SBIC 0x6,5
 	RJMP _0x5B
-; 0000 0108         {
-; 0000 0109             washer();
+; 0000 0106         {
+; 0000 0107             washer();
 	RCALL _washer
-; 0000 010A         }
-; 0000 010B         else
+; 0000 0108         }
+; 0000 0109         else
 	RJMP _0x5C
 _0x5B:
-; 0000 010C         {
-; 0000 010D             off();
+; 0000 010A         {
+; 0000 010B             off();
 	RCALL _off
-; 0000 010E         }
+; 0000 010C         }
 _0x5C:
 _0x5A:
 _0x56:
 _0x52:
 _0x4E:
-; 0000 010F         delay_ms(500);
+; 0000 010D         delay_ms(500);
 	LDI  R30,LOW(500)
 	LDI  R31,HIGH(500)
 	CALL SUBOPT_0x0
-; 0000 0110       }
+; 0000 010E       }
 	RJMP _0x48
-; 0000 0111 }
+; 0000 010F }
 _0x5D:
 	RJMP _0x5D
 	#ifndef __SLEEP_DEFINED__
@@ -2288,12 +2289,6 @@ __delay_ms0:
 	brne __delay_ms0
 __delay_ms1:
 	ret
-
-__CPW02:
-	CLR  R0
-	CP   R0,R26
-	CPC  R0,R27
-	RET
 
 ;END OF CODE MARKER
 __END_OF_CODE:

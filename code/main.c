@@ -23,12 +23,12 @@
 
 unsigned int rainFall, setTimeButton;
 
-// Timer 1 output compare A interrupt service routine
+// Timer1 is used to delay, wipe fast or low is depended on OCR1A.
 interrupt [TIM1_COMPA] void timer1_compa_isr(void)
 {
     if(wasSw == On)
     {
-        PORTD.0 = 1;
+        PORTD.0 = 1; //Water Jet Motor is actived
     }
     OCR0B = 10;
     delay_ms(2000);
@@ -43,13 +43,6 @@ interrupt [EXT_INT0] void ext_int0_isr(void)
     {
         setTimeButton = 0;
     }                     
-}
-
-// Washer
-interrupt [EXT_INT1] void ext_int1_isr(void)
-{
-// Place your code here
-
 }
 
 // Read Rain Sensor
@@ -68,7 +61,7 @@ return ADCW;
 
 void thongBaoLCD(unsigned int x)
 {
-    if(x > 0 && x < 350)
+    if(x > 10 && x < 350)
     {
         lcd_puts("RainFall: Slight");      
     }                            
@@ -169,7 +162,7 @@ void modeAuto()
     lcd_gotoxy(0,1);
     thongBaoLCD(rainFall);   
     //Allow interrup
-    if(rainFall != 0) //When rain sensor receive rain sginal -> allow interrupt 
+    if(rainFall > 10) //When rain sensor receive rain sginal -> allow interrupt 
     {                             
         TIMSK1 = 0b00000010;  
     }                    
@@ -179,7 +172,7 @@ void modeAuto()
     }            
         
     //Delay depend on ADC using Timer1
-    if(rainFall > 0 && rainFall < 350) // Slight
+    if(rainFall > 10 && rainFall < 350) // Slight
     {
         OCR1AH = slowH;
         OCR1AL = slowL;        
@@ -207,15 +200,20 @@ void main(void)
 {
 
 // Timer/Counter 0 initialization
+// Mode: fastPWM (Top is OCR0A)
+// Prescaler: 1024
 TCCR0A=0b00100011;
 TCCR0B=0b00001101;
-OCR0A=100;
+OCR0A=100; 
 OCR0B=5;
 
 // Timer/Counter 1 initialization
-TCCR1A=0b00000000; // Mode CTC: TOP OCR1A
-TCCR1B=0b00001100; // Presacle: 256 -> f: 256/8 = 32 muys
-TIMSK1=0b00000000; // Interrupt will be set depend on mode
+// Mode: CTC (Top is OCR1A)
+// Prescaler: 256 -> f: 256/8 = 32 muys
+// Interrupt and top will be set depend on mode
+TCCR1A=0b00000000;
+TCCR1B=0b00001100; 
+TIMSK1=0b00000000; 
 
 // ADC initialization
 DIDR0=0x01;
