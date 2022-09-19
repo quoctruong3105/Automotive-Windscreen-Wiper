@@ -1,2 +1,2 @@
-# Automotive Windscreen Wiper
+# Automotive-Windscreen-Wiper
 Working Principle:
