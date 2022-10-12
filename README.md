@@ -1,5 +1,7 @@
 # Automotive-Windscreen-Wiper
 + Note: In fact, the rain sensor on the car is based on the mechanism of detecting the change of light shining through the windshield. Therefore, this project uses light sensors to replace rain sensors on cars.
++ This is a self-study project to practice and improve skills
++ Tasks: Simulate circuit diagram on Proteus, write code in Codevision to load AVR microcontroller, run system and debug,...
 + Knowledge used in this project:
     - Microcontroller: External Interrupt, Timer0(fastPWM), Timer1(delays depend on OCR1A)
     - C language: loop, if-else structure.
